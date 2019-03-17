@@ -4,27 +4,35 @@ using namespace sound;
 
 void SoundManager::Initialize()
 {
+	if (!BASS_Init(-1, 44100, BASS_DEVICE_3D, 0, NULL))
+	{
+		m_initialized = false;
+		return;
+	}
+	
 	m_initialized = true;
 }
 
 void SoundManager::Shutdown()
 {
-	for (auto sound_thread : m_sound_threads)
-		sound_thread->join();
+	BASS_Stop();
+	BASS_Free();
 }
 
-void SoundManager::PlaySoundThread(Sound sound_)
+void SoundManager::Play(Sound& sound_)
 {
-	DWORD sound_playing_flags = 0;
-	sound_playing_flags |= SND_FILENAME;
-	sound_playing_flags |= SND_ASYNC;
+	if (!m_initialized)
+		return;
 
-	PlaySoundA(sound_.file_name.c_str(), NULL, sound_playing_flags);
+	HSTREAM hstream = BASS_StreamCreateFile(FALSE, sound_.file_name.c_str(), 0, 0, 0);
+	BASS_ChannelPlay(hstream, FALSE);
+	sound_.stream_handle = hstream;
 }
 
-void SoundManager::Play(const std::string& sound_file_name_)
+void SoundManager::Stop(Sound& sound_)
 {
-	Sound temp_sound = { sound_file_name_, 1 };
-	std::thread* sound_thread = new std::thread(&SoundManager::PlaySoundThread, this, temp_sound);
-	m_sound_threads.push_back(sound_thread);
+	if (!m_initialized)
+		return;
+
+	BASS_ChannelStop(sound_.stream_handle);
 }

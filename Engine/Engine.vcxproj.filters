@@ -21,7 +21,9 @@
     <ClCompile Include="src\EngineMain.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="src\sound\SoundMain.cpp" />
+    <ClCompile Include="src\sound\SoundMain.cpp">
+      <Filter>Engine\Sound</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\graphics\GraphicsMain.h">

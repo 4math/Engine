@@ -4,15 +4,14 @@
 #include <list>
 #include <thread>
 
-#pragma comment(lib, "Winmm.lib")
-#include <Windows.h>
+#include "bass.h"
 
 namespace sound
 {
 	struct Sound
 	{
 		std::string file_name;
-		float volume;
+		HSTREAM stream_handle;
 	};
 
 	class SoundManager
@@ -20,7 +19,6 @@ namespace sound
 		// VARIABLES
 	private:
 		bool m_initialized = false;
-		std::list<std::thread*> m_sound_threads;
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
@@ -31,9 +29,9 @@ namespace sound
 	private:
 		void Initialize();
 		void Shutdown();
-		void PlaySoundThread(Sound sound_);
 
 	public:
-		void Play(const std::string& sound_file_name_);
+		void Play(Sound& sound_);
+		void Stop(Sound& sound_);
 	};
 }
