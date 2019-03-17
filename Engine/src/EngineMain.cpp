@@ -1,10 +1,12 @@
 #include "EngineMain.h"
 
+using namespace engine;
+
 void Engine::Initiailize()
 {
 	// TODO: Init graphics -> Init sound -> Init input
 
-	m_initialization_successful = true;
+	m_initialized = true;
 }
 
 void Engine::Shutdown()
@@ -15,7 +17,7 @@ void Engine::Shutdown()
 int Engine::Loop()
 {
 	// If engine was not initialized successfully exit the loop
-	if (!m_initialization_successful) 
+	if (!m_initialized)
 		return EXIT_CODE_FAILURE;
 
 	return EXIT_CODE_OK;

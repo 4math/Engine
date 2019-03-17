@@ -2,6 +2,6 @@
 
 int main(int argc, char** argv)
 {
-	Engine engine("Debug game");
+	engine::Engine engine("Debug game");
 	return engine.Loop();
 }
