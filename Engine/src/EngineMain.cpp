@@ -12,6 +12,11 @@ void Engine::Initiailize()
 void Engine::Shutdown()
 {
 	// Free resources here
+	if (m_sound_manager != nullptr)
+	{
+		delete m_sound_manager;
+		m_sound_manager = nullptr;
+	}
 }
 
 int Engine::Loop()

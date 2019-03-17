@@ -2,12 +2,12 @@
 
 #include <string>
 
-namespace engine
-{
-
 #include "graphics/GraphicsMain.h"
 #include "input/InputMain.h"
 #include "sound/SoundMain.h"
+
+namespace engine
+{
 
 	constexpr int EXIT_CODE_OK = 0;
 	constexpr int EXIT_CODE_FAILURE = -1;
@@ -18,6 +18,8 @@ namespace engine
 	private:
 		bool m_initialized = false;
 		std::string m_game_name;
+
+		sound::SoundManager* m_sound_manager = nullptr;
 
 
 		// CONSTRUCTORS/DESTRUCTORS
