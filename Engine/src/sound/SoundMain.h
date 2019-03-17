@@ -33,5 +33,6 @@ namespace sound
 	public:
 		void Play(Sound& sound_);
 		void Stop(Sound& sound_);
+		void SetVolume(float volume_); // Volume range from 0 (no sound) to 1 (maximum)
 	};
 }
