@@ -18,6 +18,9 @@
     <ClCompile Include="src\Main.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\EngineMain.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\graphics\GraphicsMain.h">
@@ -28,6 +31,9 @@
     </ClInclude>
     <ClInclude Include="src\sound\SoundMain.h">
       <Filter>Engine\Sound</Filter>
+    </ClInclude>
+    <ClInclude Include="src\EngineMain.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
