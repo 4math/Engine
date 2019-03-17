@@ -1,4 +1,7 @@
+#include "EngineMain.h"
+
 int main(int argc, char** argv)
 {
-	return 0;
+	Engine engine("Debug game");
+	return engine.Loop();
 }
