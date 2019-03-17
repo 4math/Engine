@@ -7,7 +7,7 @@
 #include "sound/SoundMain.h"
 
 constexpr int EXIT_CODE_OK = 0;
-constexpr int EXIT_CODE_FAILURE = 1;
+constexpr int EXIT_CODE_FAILURE = -1;
 
 class Engine
 {
