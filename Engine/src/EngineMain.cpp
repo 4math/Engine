@@ -6,6 +6,8 @@ void Engine::Initiailize()
 {
 	// TODO: Init graphics -> Init sound -> Init input
 
+	m_sound_manager = new sound::SoundManager();
+
 	m_initialized = true;
 }
 
