@@ -36,3 +36,11 @@ void SoundManager::Stop(Sound& sound_)
 
 	BASS_ChannelStop(sound_.stream_handle);
 }
+
+void SoundManager::SetVolume(float volume_)
+{
+	if (!m_initialized)
+		return;
+
+	BASS_SetVolume(volume_);
+}
