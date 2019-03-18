@@ -38,5 +38,8 @@
     <ClInclude Include="src\EngineMain.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="src\GenericGame.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
