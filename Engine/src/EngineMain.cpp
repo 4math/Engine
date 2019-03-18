@@ -4,7 +4,8 @@ using namespace engine;
 
 void Engine::Initiailize()
 {
-	// TODO: Init graphics -> Init sound -> Init input
+	// TODO: Init sound -> Init input
+	m_graphics_manager = new graphics::GraphicsManager(m_process_name);
 
 	m_sound_manager = new sound::SoundManager();
 
@@ -19,6 +20,12 @@ void Engine::Shutdown()
 		delete m_sound_manager;
 		m_sound_manager = nullptr;
 	}
+	if (m_graphics_manager != nullptr)
+	{
+		delete m_graphics_manager;
+		m_graphics_manager = nullptr;
+	}
+	m_initialized = false;
 }
 
 int Engine::Loop()

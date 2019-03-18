@@ -17,14 +17,15 @@ namespace engine
 		// VARIABLES
 	private:
 		bool m_initialized = false;
-		std::string m_game_name;
+		std::string m_process_name;
 
+		graphics::GraphicsManager* m_graphics_manager = nullptr;
 		sound::SoundManager* m_sound_manager = nullptr;
 
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
-		Engine(const std::string& game_name_) : m_game_name(game_name_) { Initiailize(); };
+		Engine(const std::string& process_name_) : m_process_name(process_name_) { Initiailize(); };
 		~Engine() { Shutdown(); };
 
 
