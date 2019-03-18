@@ -10,14 +10,10 @@ private:
 
 	// CONSTRUCTORS/DESTRUCTORS
 public:
-	GenericGame() { Initialize(); };
-	virtual ~GenericGame() { Shutdown(); }; // Is virtual destructor needed here?
+	GenericGame() {};
+	virtual ~GenericGame() {};
 
 	// METHODES
-private:
-	virtual void Initialize() = 0;
-	virtual void Shutdown() = 0;
-
 public:
 	virtual void FrameAction() = 0; // This method will be called every game tick
 
