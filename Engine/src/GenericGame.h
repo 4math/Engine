@@ -4,8 +4,7 @@ class GenericGame
 {
 	// VARIABLES
 private:
-
-public:
+	double m_fps_limit = 60.0;
 
 	// CONSTRUCTORS/DESTRUCTORS
 public:
@@ -18,5 +17,5 @@ private:
 	virtual void Shutdown() = 0;
 
 public:
-
+	virtual void FrameAction() = 0; // This method will be called every game tick
 };
