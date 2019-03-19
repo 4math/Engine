@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>;
+#include <string>
 #include <exception>
 
 #include "environment/EnvironmentMain.h"
