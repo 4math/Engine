@@ -27,26 +27,14 @@ int graphics::GraphicsManager::CreateGlfwWindow(environment::WindowType type_, i
 	switch (type_)
 	{
 		case environment::WINDOWED:
-		{
-			if (m_env->CreateWindowedWindow(width_, height_, m_process_name) == environment::EXIT_CODE_OK)
-				return EXIT_CODE_OK;
-			else
-				return EXIT_CODE_FAILURE;
-		}
+			return m_env->CreateWindowedWindow(width_, height_, m_process_name);
+
 		case environment::BORDERLESS:
-		{
-			if (m_env->CreateBorderlessWindow(m_process_name) == environment::EXIT_CODE_OK)
-				return EXIT_CODE_OK;
-			else
-				return EXIT_CODE_FAILURE;
-		}
+			return m_env->CreateBorderlessWindow(m_process_name);
+
 		case environment::FULLSCREEN:
-		{
-			if (m_env->CreateFullscreenWindow(width_, height_, m_process_name) == environment::EXIT_CODE_OK)
-				return EXIT_CODE_OK;
-			else
-				return EXIT_CODE_FAILURE;
-		}
+			return m_env->CreateFullscreenWindow(width_, height_, m_process_name);
+
 		default:
 			return EXIT_CODE_FAILURE;
 	}
@@ -54,8 +42,5 @@ int graphics::GraphicsManager::CreateGlfwWindow(environment::WindowType type_, i
 
 int graphics::GraphicsManager::DestroyGlfwWindow()
 {
-	if (m_env->DestroyWindow() == environment::EXIT_CODE_OK)
-		return EXIT_CODE_OK;
-	else
-		return EXIT_CODE_FAILURE;
+	return m_env->DestroyWindow();
 }
