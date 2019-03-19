@@ -17,7 +17,7 @@ namespace engine
 	private:
 		bool m_initialized = false;
 		GenericGame* m_game = nullptr;
-
+		graphics::GraphicsManager* m_graphics_manager = nullptr;
 		sound::SoundManager* m_sound_manager = nullptr;
 
 

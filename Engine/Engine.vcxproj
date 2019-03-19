@@ -20,12 +20,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\EngineMain.cpp" />
+    <ClCompile Include="src\graphics\environment\EnvironmentMain.cpp" />
+    <ClCompile Include="src\graphics\GraphicsMain.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\sound\SoundMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\EngineMain.h" />
     <ClInclude Include="src\GenericGame.h" />
+    <ClInclude Include="src\graphics\environment\EnvironmentMain.h" />
     <ClInclude Include="src\graphics\GraphicsMain.h" />
     <ClInclude Include="src\input\InputMain.h" />
     <ClInclude Include="src\sound\SoundMain.h" />
