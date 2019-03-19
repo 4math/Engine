@@ -5,7 +5,7 @@ using namespace engine;
 void Engine::Initiailize()
 {
 	// TODO: Init sound -> Init input
-	m_graphics_manager = new graphics::GraphicsManager(m_process_name);
+	m_graphics_manager = new graphics::GraphicsManager(m_game->GameName());
 	m_sound_manager = new sound::SoundManager();
 #if _DEBUG
 	m_graphics_manager->CreateGlfwWindow(environment::WINDOWED, 1280, 720);
