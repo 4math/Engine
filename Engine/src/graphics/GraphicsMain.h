@@ -31,12 +31,12 @@ namespace graphics
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
 		GraphicsManager(std::string &process_name_) : m_process_name(process_name_) { Initialize(process_name_); }
-		~GraphicsManager() { Shutdow(); }
+		~GraphicsManager() { Shutdown(); }
 
 		// METHODES
 	private:
 		void Initialize(std::string &process_name_);
-		void Shutdow();
+		void Shutdown();
 	public:
 		int CreateGlfwWindow(environment::WindowType type_, int width_ = 0, int height_ = 0);
 		int DestroyGlfwWindow();

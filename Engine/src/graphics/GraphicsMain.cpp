@@ -12,7 +12,7 @@ void graphics::GraphicsManager::Initialize(std::string &process_name_)
 #endif 
 }
 
-void graphics::GraphicsManager::Shutdow()
+void graphics::GraphicsManager::Shutdown()
 {
 	if (m_env != nullptr)
 	{
