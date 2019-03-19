@@ -2,7 +2,12 @@
 
 void environment::EnvironmentManager::Initialize()
 {
-	glfwInit();
+	if (glfwInit() == GLFW_FALSE)
+	{
+		m_initialized = false;
+		return;
+	}
+	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	m_monitor = glfwGetPrimaryMonitor();
 	m_initialized = true;
@@ -39,6 +44,7 @@ int environment::EnvironmentManager::CreateFullscreenWindow(int width_, int heig
 	}
 	else
 	{
+		throw window_creation_failure();
 		DestroyWindow();
 		return environment::EXIT_CODE_FAILURE;
 	}
@@ -51,13 +57,14 @@ int environment::EnvironmentManager::CreateBorderlessWindow(std::string title_)
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	if ((m_window = glfwCreateWindow(mode->width, mode->height, title_.c_str(), m_monitor, NULL)) != NULL)
+	if ((m_window = glfwCreateWindow(mode->width, mode->height, title_.c_str(), m_monitor, nullptr)) != NULL)
 	{
 		m_windowType = environment::BORDERLESS;
 		return environment::EXIT_CODE_OK;
 	}
 	else
 	{
+		throw window_creation_failure();
 		DestroyWindow();
 		return environment::EXIT_CODE_FAILURE;
 	}
@@ -65,14 +72,10 @@ int environment::EnvironmentManager::CreateBorderlessWindow(std::string title_)
 
 int environment::EnvironmentManager::DestroyWindow()
 {
-	if (m_windowType != environment::NO_WINDOW)
-	{
-		glfwDestroyWindow(m_window);
-		m_windowType = environment::NO_WINDOW;
-		return environment::EXIT_CODE_OK;
-	}
-	else
-	{
+	if (m_windowType == environment::NO_WINDOW)
 		return environment::EXIT_CODE_FAILURE;
-	}
+
+	glfwDestroyWindow(m_window);
+	m_windowType = environment::NO_WINDOW;
+	return environment::EXIT_CODE_OK;
 }
