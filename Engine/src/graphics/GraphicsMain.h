@@ -1,40 +1,44 @@
 #pragma once
 
 #include <string>;
+#include <exception>
 
+#include "environment/EnvironmentMain.h"
 
 namespace graphics
 {
+#pragma region exceptions and EXIT_CODES
+	struct bad_header : public std::exception {
+		const char * what() const throw () {
+			return "Header file EnvironmentMain.h is missing or damaged";
+		}
+	};
+
 	constexpr int EXIT_CODE_OK = 0;
 	constexpr int EXIT_CODE_FAILURE = -1;
+#pragma endregion
 
 	class GraphicsManager
 	{
 		// VARIABLES
 	private:
-		bool m_environment = false;
-		bool m_renderer = false;
-		bool m_creator = false;
-/*TODO:
-	renderer
-	creator
-*/
+		bool m_initialized = false;
+		std::string m_process_name;
+		environment::EnvironmentManager* m_env = nullptr;
 	public:
 
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
-		GraphicsManager() { Initialize("Debug process"); }
-		GraphicsManager(std::string process_name_) { Initialize(process_name_); }
-		GraphicsManager(std::string process_name_, int window_width_, int window_height_) { Initialize(process_name_, window_width_, window_height_); }
+		GraphicsManager(std::string &process_name_) : m_process_name(process_name_) { Initialize(process_name_); }
 		~GraphicsManager() { Shutdow(); }
 
 		// METHODES
 	private:
-		int Initialize(std::string process_name_, int window_width_ = 1280, int window_height_ = 720);
-		int Shutdow();
-
+		void Initialize(std::string &process_name_);
+		void Shutdow();
 	public:
-
+		int CreateGlfwWindow(environment::WindowType type_, int width_ = 0, int height_ = 0);
+		int DestroyGlfwWindow();
 	};
 }
