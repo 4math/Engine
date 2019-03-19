@@ -1,7 +1,6 @@
 #pragma once
 
-#include <string>
-
+#include "GenericGame.h"
 #include "graphics/GraphicsMain.h"
 #include "input/InputMain.h"
 #include "sound/SoundMain.h"
@@ -17,15 +16,14 @@ namespace engine
 		// VARIABLES
 	private:
 		bool m_initialized = false;
-		std::string m_process_name;
-
+		GenericGame* m_game = nullptr;
 		graphics::GraphicsManager* m_graphics_manager = nullptr;
 		sound::SoundManager* m_sound_manager = nullptr;
 
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
-		Engine(const std::string& process_name_) : m_process_name(process_name_) { Initiailize(); };
+		Engine(GenericGame* game_) : m_game(game_) { Initiailize(); };
 		~Engine() { Shutdown(); };
 
 
