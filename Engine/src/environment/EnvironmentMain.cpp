@@ -75,7 +75,7 @@ int environment::EnvironmentManager::DestroyWindow()
 
 int environment::EnvironmentManager::WindowCreate(int width_, int height_, std::string title_, WindowType type_)
 {
-	if (!m_initialized)
+	if (!m_initialized || type_ == environment::NO_WINDOW)
 		return EXIT_CODE_FAILURE;
 
 	if (m_window != nullptr || m_window_type != environment::NO_WINDOW)
