@@ -8,7 +8,7 @@ void Engine::Initiailize()
 	m_environment_manager = new environment::EnvironmentManager();
 
 #if _DEBUG
-	m_environment_manager->CreateEnvWindow(1280, 720, "debug window", environment::WINDOWED);
+	m_environment_manager->WindowCreate(500, 500, "debug window", environment::WINDOWED);
 #endif
 
 	m_graphics_manager = new graphics::GraphicsManager(m_environment_manager);
@@ -43,6 +43,14 @@ int Engine::Loop()
 	// If engine was not initialized successfully exit the loop
 	if (!m_initialized)
 		return EXIT_CODE_FAILURE;
+
+	if (!m_environment_manager->IsWindowCreated())
+		return EXIT_CODE_OK;
+
+	while (!m_environment_manager->ShouldFinish())
+	{
+		m_environment_manager->ProcessMessages();
+	}
 
 	return EXIT_CODE_OK;
 }

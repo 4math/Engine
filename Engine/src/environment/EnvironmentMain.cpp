@@ -12,7 +12,7 @@ void environment::EnvironmentManager::Initialize(bool create_window_)
 	m_monitor = glfwGetPrimaryMonitor();
 
 	if (create_window_)
-		if (CreateEnvWindow(m_window_width, m_window_height, m_window_title, m_window_type) != EXIT_CODE_OK)
+		if (WindowCreate(m_window_width, m_window_height, m_window_title, m_window_type) != EXIT_CODE_OK)
 		{
 			m_initialized = false;
 			return;
@@ -73,7 +73,7 @@ int environment::EnvironmentManager::DestroyWindow()
 	return environment::EXIT_CODE_OK;
 }
 
-int environment::EnvironmentManager::CreateEnvWindow(int width_, int height_, std::string title_, WindowType type_)
+int environment::EnvironmentManager::WindowCreate(int width_, int height_, std::string title_, WindowType type_)
 {
 	if (!m_initialized)
 		return EXIT_CODE_FAILURE;
@@ -100,4 +100,19 @@ int environment::EnvironmentManager::CreateEnvWindow(int width_, int height_, st
 	default:
 		return EXIT_CODE_FAILURE;
 	}
+}
+
+void environment::EnvironmentManager::ProcessMessages()
+{
+	glfwPollEvents();
+}
+
+bool environment::EnvironmentManager::ShouldFinish()
+{
+	return glfwWindowShouldClose(m_window);
+}
+
+bool environment::EnvironmentManager::IsWindowCreated()
+{
+	return (m_window == nullptr || m_window_type == environment::NO_WINDOW) ? false : true;
 }

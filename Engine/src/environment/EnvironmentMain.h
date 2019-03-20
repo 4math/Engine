@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <Windows.h>
 
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
@@ -54,7 +55,10 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		int CreateBorderlessWindow();
 
 	public:
-		int CreateEnvWindow(int width_, int height_, std::string title_, WindowType type_);
+		int WindowCreate(int width_, int height_, std::string title_, WindowType type_);
+		void ProcessMessages();
+		bool ShouldFinish();
+		bool IsWindowCreated();
 	};
 
 }
