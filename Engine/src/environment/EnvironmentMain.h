@@ -6,6 +6,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include "GLFW/glfw3.h"
 
+#include "InputMain.h"
+
 namespace environment
 {
 #pragma region exceptions and EXIT_CODES
@@ -35,6 +37,8 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		GLFWmonitor* m_monitor = nullptr;
 		GLFWwindow* m_window = nullptr;
 
+		InputManager* m_input_manager = nullptr;
+
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
 		EnvironmentManager() { Initialize(false); };
@@ -59,6 +63,8 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		void ProcessMessages();
 		bool ShouldFinish();
 		bool IsWindowCreated();
+
+		InputManager* Input() const { return m_input_manager; }
 	};
 
 }

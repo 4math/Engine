@@ -30,6 +30,9 @@
     <ClCompile Include="src\environment\EnvironmentMain.cpp">
       <Filter>Engine\Environment</Filter>
     </ClCompile>
+    <ClCompile Include="src\environment\InputMain.cpp">
+      <Filter>Engine\Environment</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\graphics\GraphicsMain.h">
