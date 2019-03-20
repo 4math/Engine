@@ -47,9 +47,16 @@ int Engine::Loop()
 	if (!m_environment_manager->IsWindowCreated())
 		return EXIT_CODE_OK;
 
-	while (!m_environment_manager->ShouldFinish())
+	bool loop_should_finish = false; // Local flag for exiting loop
+
+	while (!m_environment_manager->ShouldFinish() && !loop_should_finish)
 	{
+		// Get key press events, mouse moves, window size changes etc.
 		m_environment_manager->ProcessMessages();
+
+		// Check if escape key was pressed
+		if (m_environment_manager->Input()->KeyPressed(256))
+			loop_should_finish = true;
 	}
 
 	return EXIT_CODE_OK;

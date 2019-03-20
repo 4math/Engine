@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="src\EngineMain.cpp" />
     <ClCompile Include="src\environment\EnvironmentMain.cpp" />
+    <ClCompile Include="src\environment\InputMain.cpp" />
     <ClCompile Include="src\graphics\GraphicsMain.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\sound\SoundMain.cpp" />
