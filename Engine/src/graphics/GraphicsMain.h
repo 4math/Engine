@@ -3,7 +3,7 @@
 #include <string>
 #include <exception>
 
-#include "environment/EnvironmentMain.h"
+#include "../environment/EnvironmentMain.h"
 
 namespace graphics
 {
@@ -23,22 +23,17 @@ namespace graphics
 		// VARIABLES
 	private:
 		bool m_initialized = false;
-		std::string m_process_name;
-		environment::EnvironmentManager* m_env = nullptr;
-	public:
-
+		environment::EnvironmentManager* m_environment_manager = nullptr;
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
-		GraphicsManager(std::string &process_name_) : m_process_name(process_name_) { Initialize(process_name_); }
+		GraphicsManager(environment::EnvironmentManager* environment_manager_) : 
+			m_environment_manager(environment_manager_) { Initialize(); }
 		~GraphicsManager() { Shutdown(); }
 
 		// METHODES
 	private:
-		void Initialize(std::string &process_name_);
+		void Initialize();
 		void Shutdown();
-	public:
-		int CreateGlfwWindow(environment::WindowType type_, int width_ = 0, int height_ = 0);
-		int DestroyGlfwWindow();
 	};
 }

@@ -2,7 +2,7 @@
 
 #include "GenericGame.h"
 #include "graphics/GraphicsMain.h"
-#include "input/InputMain.h"
+#include "environment/InputMain.h"
 #include "sound/SoundMain.h"
 
 namespace engine
@@ -19,6 +19,7 @@ namespace engine
 		GenericGame* m_game = nullptr;
 		graphics::GraphicsManager* m_graphics_manager = nullptr;
 		sound::SoundManager* m_sound_manager = nullptr;
+		environment::EnvironmentManager* m_environment_manager = nullptr;
 
 
 		// CONSTRUCTORS/DESTRUCTORS

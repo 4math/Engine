@@ -25,23 +25,36 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		// VARIABLES
 	private:
 		bool m_initialized = false;
+
+		int m_window_width = 0;
+		int m_window_height = 0;
+		std::string m_window_title;
+		WindowType m_window_type = environment::NO_WINDOW;
+
 		GLFWmonitor* m_monitor = nullptr;
 		GLFWwindow* m_window = nullptr;
-		WindowType m_windowType = environment::NO_WINDOW;
-	public:
+
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
-		EnvironmentManager() { Initialize(); };
+		EnvironmentManager() { Initialize(false); };
+		EnvironmentManager(int window_width_, int window_height_, const std::string& window_title_, WindowType window_type_) : 
+			m_window_width(window_width_), m_window_height(window_height_), 
+			m_window_title(window_title_), m_window_type(window_type_) { Initialize(true); }
 		~EnvironmentManager() { Shutdown(); };
+
 		// METHODES
 	private:
-		void Initialize();
+		void Initialize(bool create_window_);
 		void Shutdown();
-	public:
-		int CreateWindowedWindow(int width_, int height_, std::string title_);
-		int CreateFullscreenWindow(int width_, int height_, std::string title_);
-		int CreateBorderlessWindow(std::string title_);
+
 		int DestroyWindow();
+
+		int CreateWindowedWindow();
+		int CreateFullscreenWindow();
+		int CreateBorderlessWindow();
+
+	public:
+		int CreateEnvWindow(int width_, int height_, std::string title_, WindowType type_);
 	};
 
 }
