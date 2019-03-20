@@ -1,8 +1,9 @@
 #pragma once
 
 #include "GenericGame.h"
+#include "environment/EnvironmentMain.h"
+#include "environment/InputMain.h"
 #include "graphics/GraphicsMain.h"
-#include "input/InputMain.h"
 #include "sound/SoundMain.h"
 
 namespace engine
@@ -19,13 +20,12 @@ namespace engine
 		GenericGame* m_game = nullptr;
 		graphics::GraphicsManager* m_graphics_manager = nullptr;
 		sound::SoundManager* m_sound_manager = nullptr;
-
+		environment::EnvironmentManager* m_environment_manager = nullptr;
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
 		Engine(GenericGame* game_) : m_game(game_) { Initiailize(); };
 		~Engine() { Shutdown(); };
-
 
 		// METHODES
 	private:
@@ -34,7 +34,6 @@ namespace engine
 
 	public:
 		int Loop();
-
 	};
 
 }

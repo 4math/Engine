@@ -10,11 +10,8 @@
     <Filter Include="Engine\Sound">
       <UniqueIdentifier>{77dfa8b1-f468-40fd-ba72-3b08588f8312}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Input">
-      <UniqueIdentifier>{d0932f77-2ec3-4a1e-9a41-ab1053b15292}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Graphics\Environment">
-      <UniqueIdentifier>{58329fe2-506f-4280-805d-549e38467c6f}</UniqueIdentifier>
+    <Filter Include="Engine\Environment">
+      <UniqueIdentifier>{9f5539cf-9360-4d54-b36a-68e75275884f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -30,16 +27,13 @@
     <ClCompile Include="src\graphics\GraphicsMain.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="src\graphics\environment\EnvironmentMain.cpp">
-      <Filter>Engine\Graphics\Environment</Filter>
+    <ClCompile Include="src\environment\EnvironmentMain.cpp">
+      <Filter>Engine\Environment</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\graphics\GraphicsMain.h">
       <Filter>Engine\Graphics</Filter>
-    </ClInclude>
-    <ClInclude Include="src\input\InputMain.h">
-      <Filter>Engine\Input</Filter>
     </ClInclude>
     <ClInclude Include="src\sound\SoundMain.h">
       <Filter>Engine\Sound</Filter>
@@ -50,8 +44,11 @@
     <ClInclude Include="src\GenericGame.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="src\graphics\environment\EnvironmentMain.h">
-      <Filter>Engine\Graphics\Environment</Filter>
+    <ClInclude Include="src\environment\EnvironmentMain.h">
+      <Filter>Engine\Environment</Filter>
+    </ClInclude>
+    <ClInclude Include="src\environment\InputMain.h">
+      <Filter>Engine\Environment</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

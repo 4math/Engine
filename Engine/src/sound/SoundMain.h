@@ -1,8 +1,6 @@
 #pragma once
 
 #include <string>
-#include <list>
-#include <thread>
 
 #include "bass.h"
 
