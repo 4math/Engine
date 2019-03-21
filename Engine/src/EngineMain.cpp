@@ -4,13 +4,7 @@ using namespace engine;
 
 void Engine::Initiailize()
 {
-	// TODO: Init input
-	m_environment_manager = new environment::EnvironmentManager();
-
-#if _DEBUG
-	m_environment_manager->WindowCreate(500, 500, "debug window", environment::WINDOWED);
-#endif
-
+	m_environment_manager = new environment::EnvironmentManager(500, 500, m_app_name, environment::WINDOWED);
 	m_graphics_manager = new graphics::GraphicsManager(m_environment_manager);
 	m_sound_manager = new sound::SoundManager();
 
@@ -47,16 +41,12 @@ int Engine::Loop()
 	if (!m_environment_manager->IsWindowCreated())
 		return EXIT_CODE_OK;
 
-	bool loop_should_finish = false; // Local flag for exiting loop
-
-	while (!m_environment_manager->ShouldFinish() && !loop_should_finish)
+	while (!m_environment_manager->ShouldFinish() && !m_should_finish)
 	{
-		// Get key press events, mouse moves, window size changes etc.
+		// Get key press events, mouse move events, window size change events etc.
 		m_environment_manager->ProcessMessages();
 
-		// Check if escape key was pressed
-		if (m_environment_manager->Input()->KeyPressed(256))
-			loop_should_finish = true;
+		EngineAction();
 	}
 
 	return EXIT_CODE_OK;

@@ -11,16 +11,10 @@ void environment::EnvironmentManager::Initialize(bool create_window_)
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	m_monitor = glfwGetPrimaryMonitor();
 
-	if (create_window_)
-	{
-		if (WindowCreate(m_window_width, m_window_height, m_window_title, m_window_type) != EXIT_CODE_OK)
-		{
-			m_initialized = false;
-			return;
-		}
-	}
-
 	m_initialized = true;
+
+	if (create_window_)
+		WindowCreate(m_window_width, m_window_height, m_window_title, m_window_type);
 }
 
 void environment::EnvironmentManager::Shutdown()

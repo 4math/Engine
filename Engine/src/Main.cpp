@@ -1,6 +1,6 @@
-#include "EngineMain.h"
+#include "GenericGame.h"
 
-class Game : public GenericGame
+class Game : public virtual GenericGame
 {
 	// CONSTRUCTORS/DESTRUCTORS
 public:
@@ -11,13 +11,14 @@ public:
 public:
 	void FrameAction()
 	{
-		// Some game update action here
+		// If escape key is pressed - finish the program
+		if (Environment()->Input()->KeyPressed(256))
+			SetShouldFinish(true);
 	}
 };
 
 int main(int argc, char** argv)
 {
 	Game debug_game;
-	engine::Engine engine(&debug_game);
-	return engine.Loop();
+	return debug_game.Loop();
 }
