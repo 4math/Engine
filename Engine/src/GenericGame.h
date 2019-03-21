@@ -2,24 +2,23 @@
 
 #include <string>
 
+#include "EngineMain.h"
+
 constexpr double DEFAULT_GAME_TICKRATE = 60.0; // 60 game updates per second
 
-class GenericGame
+class GenericGame : public virtual engine::Engine
 {
 	// VARIABLES
 protected:
 	double m_game_tickrate = DEFAULT_GAME_TICKRATE; // Game updates per second
-	std::string m_game_name;
-	
+
 	// CONSTRUCTORS/DESTRUCTORS
 public:
-	GenericGame() {};
+	GenericGame() {}
 	virtual ~GenericGame() {};
 
 	// METHODES
 public:
 	virtual void FrameAction() = 0; // This method will be called every game tick
-
-	double& GameTickrate() { return m_game_tickrate; }
-	std::string& GameName() { return m_game_name; }
+	void EngineAction() { FrameAction(); } // Implementation of virtual method of Engine class
 };
