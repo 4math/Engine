@@ -1,22 +1,9 @@
 #pragma once
 
-#include <string>
-#include <exception>
-
 #include "../environment/EnvironmentMain.h"
 
 namespace graphics
 {
-#pragma region exceptions and EXIT_CODES
-	struct bad_header : public std::exception {
-		const char * what() const throw () {
-			return "Header file EnvironmentMain.h is missing or damaged";
-		}
-	};
-
-	constexpr int EXIT_CODE_OK = 0;
-	constexpr int EXIT_CODE_FAILURE = -1;
-#pragma endregion
 
 	class GraphicsManager
 	{
@@ -35,5 +22,10 @@ namespace graphics
 	private:
 		void Initialize();
 		void Shutdown();
+
+	public:
+		void BeginFrame();
+		void EndFrame();
 	};
+
 }
