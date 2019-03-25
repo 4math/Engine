@@ -16,9 +16,4 @@ protected:
 public:
 	GenericGame() {}
 	virtual ~GenericGame() {};
-
-	// METHODES
-public:
-	virtual void FrameAction() = 0; // This method will be called every game tick
-	void EngineAction() { FrameAction(); } // Implementation of virtual method of Engine class
 };

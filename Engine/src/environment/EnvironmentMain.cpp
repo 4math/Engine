@@ -24,6 +24,7 @@ void environment::EnvironmentManager::Shutdown()
 		delete m_input_manager;
 		m_input_manager = nullptr;
 	}
+
 	glfwPollEvents();
 	DestroyWindow();
 	glfwTerminate();

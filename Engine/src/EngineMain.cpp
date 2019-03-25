@@ -19,16 +19,19 @@ void Engine::Shutdown()
 		delete m_sound_manager;
 		m_sound_manager = nullptr;
 	}
+
 	if (m_graphics_manager != nullptr)
 	{
 		delete m_graphics_manager;
 		m_graphics_manager = nullptr;
 	}
+
 	if (m_environment_manager != nullptr)
 	{
 		delete m_environment_manager;
 		m_environment_manager = nullptr;
 	}
+
 	m_initialized = false;
 }
 
@@ -46,7 +49,7 @@ int Engine::Loop()
 		// Get key press events, mouse move events, window size change events etc.
 		m_environment_manager->ProcessMessages();
 
-		EngineAction();
+		FrameAction();
 	}
 
 	return EXIT_CODE_OK;

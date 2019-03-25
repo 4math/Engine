@@ -35,7 +35,7 @@ namespace engine
 		void Shutdown();
 
 	protected:
-		virtual void EngineAction() = 0;
+		virtual void FrameAction() = 0;
 
 		graphics::GraphicsManager* Graphics() { return m_graphics_manager; }
 		sound::SoundManager* Sound() { return m_sound_manager; }
