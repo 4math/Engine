@@ -4,6 +4,7 @@
 #include "vulkan/vulkan.h"
 #include "GraphicsUtils.h"
 #include <iostream>
+#include <optional>
 
 namespace graphics
 {
@@ -19,6 +20,8 @@ namespace graphics
 
 		VkInstance m_vk_instance = VK_NULL_HANDLE;
 		VkPhysicalDevice m_vk_physical_device = VK_NULL_HANDLE;
+		VkDevice m_vk_device = VK_NULL_HANDLE;
+		VkQueue m_vk_graphics_queue = VK_NULL_HANDLE;
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
@@ -35,6 +38,7 @@ namespace graphics
 		bool InitializeVulkan();
 		void CreateInstance();
 		void PickPhysicalDevice();
+		void CreateLogicalDevice();
 
 	public:
 		void BeginFrame();

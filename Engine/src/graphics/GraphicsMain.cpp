@@ -10,6 +10,7 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	vkDestroyDevice(m_vk_device, nullptr);
 	vkDestroyInstance(m_vk_instance, nullptr);
 	m_initialized = false;
 }
@@ -20,6 +21,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 	{
 		CreateInstance();
 		PickPhysicalDevice();
+		CreateLogicalDevice();
 	}
 	catch (const std::exception& e)
 	{
@@ -43,10 +45,10 @@ void graphics::GraphicsManager::CreateInstance()
 	app_info.apiVersion = VK_API_VERSION_1_0;
 
 	uint32_t extension_count = 0;
-	const char** required_extensions;
-	required_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
-	
+	auto required_extensions = glfwGetRequiredInstanceExtensions(&extension_count);
 	auto present_extensions = ListInstanceExtensions(false);
+
+	// Checking if required extensions are available
 	for (unsigned extension_id = 0; extension_id < extension_count; extension_id++)
 	{
 		bool status = false;
@@ -83,17 +85,7 @@ void graphics::GraphicsManager::PickPhysicalDevice()
 
 	for (const auto& device : devices) 
 	{
-		VkPhysicalDeviceProperties device_properties;
-		vkGetPhysicalDeviceProperties(device, &device_properties);
-
-		VkPhysicalDeviceFeatures device_features;
-		vkGetPhysicalDeviceFeatures(device, &device_features);
-
-		bool is_suitable = 
-			device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
-			device_features.geometryShader;
-
-		if (is_suitable) 
+		if (IsDeviceSuitable(device)) 
 		{
 			m_vk_physical_device = device;
 			break;
@@ -102,6 +94,35 @@ void graphics::GraphicsManager::PickPhysicalDevice()
 
 	if (m_vk_physical_device == VK_NULL_HANDLE)
 		throw std::runtime_error("Failed to find a suitable GPU");
+}
+
+void graphics::GraphicsManager::CreateLogicalDevice()
+{
+	QueueFamilyIndices indices = FindQueueFamilies(m_vk_physical_device);
+
+	float queue_priority = 1.0f;
+
+	VkDeviceQueueCreateInfo queue_create_info = {};
+	queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	queue_create_info.queueCount = 1;
+	queue_create_info.queueFamilyIndex = indices.graphics_family.value();
+	queue_create_info.pQueuePriorities = &queue_priority;
+
+	VkPhysicalDeviceFeatures device_features = {};
+
+	VkDeviceCreateInfo create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	create_info.pQueueCreateInfos = &queue_create_info;
+	create_info.queueCreateInfoCount = 1;
+	create_info.pEnabledFeatures = &device_features;
+	create_info.enabledExtensionCount = 0;
+	create_info.enabledLayerCount = 0;
+
+	VkResult result = vkCreateDevice(m_vk_physical_device, &create_info, nullptr, &m_vk_device);
+	if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to create VkDevice, error code: " + std::to_string(result));
+
+	vkGetDeviceQueue(m_vk_device, indices.graphics_family.value(), 0, &m_vk_graphics_queue);
 }
 
 void graphics::GraphicsManager::BeginFrame()
