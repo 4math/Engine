@@ -6,3 +6,4 @@
 #include <iostream>
 
 std::vector<VkExtensionProperties> ListInstanceExtensions(bool print_);
+std::vector<VkPhysicalDevice> ListPhysicalDevices(VkInstance instance_);

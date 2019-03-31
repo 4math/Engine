@@ -12,5 +12,16 @@ std::vector<VkExtensionProperties> ListInstanceExtensions(bool print_)
 		for (const auto& extension : extensions)
 			std::cout << extension.extensionName << std::endl;
 
-	return std::vector<VkExtensionProperties>(extensions);
+	return extensions;
+}
+
+std::vector<VkPhysicalDevice> ListPhysicalDevices(VkInstance instance_)
+{
+	uint32_t device_count = 0;
+	vkEnumeratePhysicalDevices(instance_, &device_count, nullptr);
+
+	std::vector<VkPhysicalDevice> devices(device_count);
+	vkEnumeratePhysicalDevices(instance_, &device_count, devices.data());
+
+	return devices;
 }

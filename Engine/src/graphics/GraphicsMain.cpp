@@ -19,6 +19,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 	try
 	{
 		CreateInstance();
+		PickPhysicalDevice();
 	}
 	catch (const std::exception& e)
 	{
@@ -74,6 +75,33 @@ void graphics::GraphicsManager::CreateInstance()
 	VkResult result = vkCreateInstance(&create_info, nullptr, &m_vk_instance);
 	if (result != VK_SUCCESS)
 		throw std::runtime_error("Failed to create VkInstance, error code: " + std::to_string(result));
+}
+
+void graphics::GraphicsManager::PickPhysicalDevice()
+{
+	auto devices = ListPhysicalDevices(m_vk_instance);
+
+	for (const auto& device : devices) 
+	{
+		VkPhysicalDeviceProperties device_properties;
+		vkGetPhysicalDeviceProperties(device, &device_properties);
+
+		VkPhysicalDeviceFeatures device_features;
+		vkGetPhysicalDeviceFeatures(device, &device_features);
+
+		bool is_suitable = 
+			device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU &&
+			device_features.geometryShader;
+
+		if (is_suitable) 
+		{
+			m_vk_physical_device = device;
+			break;
+		}
+	}
+
+	if (m_vk_physical_device == VK_NULL_HANDLE)
+		throw std::runtime_error("Failed to find a suitable GPU");
 }
 
 void graphics::GraphicsManager::BeginFrame()

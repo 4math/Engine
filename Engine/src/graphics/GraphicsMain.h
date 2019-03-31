@@ -17,7 +17,8 @@ namespace graphics
 		std::string m_engine_name;
 		std::string m_app_name;
 
-		VkInstance m_vk_instance;
+		VkInstance m_vk_instance = VK_NULL_HANDLE;
+		VkPhysicalDevice m_vk_physical_device = VK_NULL_HANDLE;
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
@@ -33,6 +34,7 @@ namespace graphics
 
 		bool InitializeVulkan();
 		void CreateInstance();
+		void PickPhysicalDevice();
 
 	public:
 		void BeginFrame();
