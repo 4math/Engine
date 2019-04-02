@@ -21,3 +21,4 @@ bool CheckValidationLayerSupport(std::vector<const char*> &validation_layers_);
 std::vector<VkPhysicalDevice> ListPhysicalDevices(VkInstance instance_);
 bool IsDeviceSuitable(VkPhysicalDevice device_);
 QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device_);
+std::string FormatVkResult(VkResult code_);
