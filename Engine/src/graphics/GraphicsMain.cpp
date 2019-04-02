@@ -64,17 +64,21 @@ void graphics::GraphicsManager::CreateInstance()
 	create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	create_info.ppEnabledExtensionNames = extensions.data();
 
-	if (m_enable_validation_layers) {
+	if (m_enable_validation_layers) 
+	{
 		create_info.enabledLayerCount = static_cast<uint32_t>(m_validation_layers.size());
 		create_info.ppEnabledLayerNames = m_validation_layers.data();
 	}
-	else {
+	else 
+	{
 		create_info.enabledLayerCount = 0;
 	}
 
 	VkResult result = vkCreateInstance(&create_info, nullptr, &m_vk_instance);
 	if (result != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create VkInstance, error code: " + std::to_string(result));
+	}
 }
 
 void graphics::GraphicsManager::SetupDebugMessenger()
@@ -94,7 +98,8 @@ void graphics::GraphicsManager::SetupDebugMessenger()
 		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	createInfo.pfnUserCallback = DebugCallback;
 
-	if (CreateDebugUtilsMessengerEXT(&createInfo, nullptr) != VK_SUCCESS) {
+	if (CreateDebugUtilsMessengerEXT(&createInfo, nullptr) != VK_SUCCESS) 
+	{
 		throw std::runtime_error("failed to set up debug messenger!");
 	}
 }
@@ -140,7 +145,9 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 
 	VkResult result = vkCreateDevice(m_vk_physical_device, &create_info, nullptr, &m_vk_device);
 	if (result != VK_SUCCESS)
+	{
 		throw std::runtime_error("Failed to create VkDevice, error code: " + std::to_string(result));
+	}
 
 	vkGetDeviceQueue(m_vk_device, indices.graphics_family.value(), 0, &m_vk_graphics_queue);
 }
