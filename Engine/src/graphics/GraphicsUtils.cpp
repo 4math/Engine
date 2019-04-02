@@ -15,6 +15,33 @@ std::vector<VkExtensionProperties> ListInstanceExtensions(bool print_)
 	return extensions;
 }
 
+bool CheckValidationLayerSupport(std::vector<const char*> &validation_layers_)
+{
+	uint32_t layerCount;
+	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+	std::vector<VkLayerProperties> availableLayers(layerCount);
+	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+	for (const char* layerName : validation_layers_)
+	{
+		bool layerFound = false;
+		for (const auto& layerProperties : availableLayers)
+		{
+			if (strcmp(layerName, layerProperties.layerName) == 0)
+			{
+				layerFound = true;
+				break;
+			}
+		}
+		if (!layerFound)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 std::vector<VkPhysicalDevice> ListPhysicalDevices(VkInstance instance_)
 {
 	uint32_t device_count = 0;

@@ -45,7 +45,6 @@ namespace graphics
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
 
-		bool CheckValidationLayerSupport();
 		std::vector<const char*> GetRequiredExtensions();
 		VkResult CreateDebugUtilsMessengerEXT(
 			const VkDebugUtilsMessengerCreateInfoEXT* create_info_,

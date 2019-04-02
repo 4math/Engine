@@ -17,6 +17,7 @@ struct QueueFamilyIndices
 };
 
 std::vector<VkExtensionProperties> ListInstanceExtensions(bool print_);
+bool CheckValidationLayerSupport(std::vector<const char*> &validation_layers_);
 std::vector<VkPhysicalDevice> ListPhysicalDevices(VkInstance instance_);
 bool IsDeviceSuitable(VkPhysicalDevice device_);
 QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device_);

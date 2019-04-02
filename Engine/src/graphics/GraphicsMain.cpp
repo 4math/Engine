@@ -43,7 +43,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 
 void graphics::GraphicsManager::CreateInstance()
 {
-	if (m_enable_validation_layers && !CheckValidationLayerSupport())
+	if (m_enable_validation_layers && !CheckValidationLayerSupport(m_validation_layers))
 	{
 		throw std::runtime_error("validation layers requested, but not available!");
 	}
@@ -150,33 +150,6 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 	}
 
 	vkGetDeviceQueue(m_vk_device, indices.graphics_family.value(), 0, &m_vk_graphics_queue);
-}
-
-bool graphics::GraphicsManager::CheckValidationLayerSupport()
-{
-	uint32_t layerCount;
-	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-	std::vector<VkLayerProperties> availableLayers(layerCount);
-	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-	for (const char* layerName : m_validation_layers) 
-	{
-		bool layerFound = false;
-		for (const auto& layerProperties : availableLayers) 
-		{
-			if (strcmp(layerName, layerProperties.layerName) == 0) 
-			{
-				layerFound = true;
-				break;
-			}
-		}
-		if (!layerFound) 
-		{
-			return false;
-		}
-	}
-	return true;
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
