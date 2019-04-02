@@ -44,9 +44,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 void graphics::GraphicsManager::CreateInstance()
 {
 	if (m_enable_validation_layers && !CheckValidationLayerSupport(m_validation_layers))
-	{
-		throw std::runtime_error("validation layers requested, but not available!");
-	}
+		throw std::runtime_error("Validation layers requested, but not available!");
 
 	VkApplicationInfo app_info = {};
 	app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -74,34 +72,31 @@ void graphics::GraphicsManager::CreateInstance()
 		create_info.enabledLayerCount = 0;
 	}
 
-	VkResult result = vkCreateInstance(&create_info, nullptr, &m_vk_instance);
+	auto result = vkCreateInstance(&create_info, nullptr, &m_vk_instance);
 	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create VkInstance, error code: " + std::to_string(result));
-	}
+		throw std::runtime_error("Failed to create VkInstance, error: " + FormatVkResult(result));
 }
 
 void graphics::GraphicsManager::SetupDebugMessenger()
 {
 	if (!m_enable_validation_layers) return;
 
-	VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
-	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	createInfo.messageSeverity = 
+	VkDebugUtilsMessengerCreateInfoEXT create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	create_info.messageSeverity =
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | 
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	// Add VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT for full info
-	createInfo.messageType = 
+	create_info.messageType =
 		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
 		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | 
 		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	createInfo.pfnUserCallback = DebugCallback;
+	create_info.pfnUserCallback = DebugCallback;
 
-	if (CreateDebugUtilsMessengerEXT(&createInfo, nullptr) != VK_SUCCESS) 
-	{
-		throw std::runtime_error("failed to set up debug messenger!");
-	}
+	auto result = CreateDebugUtilsMessengerEXT(&create_info, nullptr);
+	if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to set up debug messenger, error: " + FormatVkResult(result));
 }
 
 void graphics::GraphicsManager::PickPhysicalDevice()
@@ -143,25 +138,22 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 	create_info.enabledExtensionCount = 0;
 	create_info.enabledLayerCount = 0;
 
-	VkResult result = vkCreateDevice(m_vk_physical_device, &create_info, nullptr, &m_vk_device);
+	auto result = vkCreateDevice(m_vk_physical_device, &create_info, nullptr, &m_vk_device);
 	if (result != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create VkDevice, error code: " + std::to_string(result));
-	}
+		throw std::runtime_error("Failed to create VkDevice, error: " + FormatVkResult(result));
 
 	vkGetDeviceQueue(m_vk_device, indices.graphics_family.value(), 0, &m_vk_graphics_queue);
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
 {
-	uint32_t glfwExtensionCount = 0;
-	const char** glfwExtensions;
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+	uint32_t glfw_extension_count = 0;
+	auto glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+	std::vector<const char*> extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
+
 	if (m_enable_validation_layers) 
-	{
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	}
+
 	return extensions;
 }
 
@@ -171,22 +163,16 @@ VkResult graphics::GraphicsManager::CreateDebugUtilsMessengerEXT(
 {
 	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_vk_instance, "vkCreateDebugUtilsMessengerEXT");
 	if (func != nullptr) 
-	{
 		return func(m_vk_instance, create_info_, allocator_, &m_vk_debug_messenger);
-	}
 	else
-	{
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
-	}
 }
 
 void graphics::GraphicsManager::DestroyDebugUtilsMessengerEXT(const VkAllocationCallbacks* allocator_)
 {
 	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_vk_instance, "vkDestroyDebugUtilsMessengerEXT");
 	if (func != nullptr) 
-	{
 		func(m_vk_instance, m_vk_debug_messenger, allocator_);
-	}
 }
 
 void graphics::GraphicsManager::BeginFrame()
