@@ -1,8 +1,6 @@
 #include "SoundMain.h"
 
-using namespace sound;
-
-void SoundManager::Initialize()
+void sound::SoundManager::Initialize()
 {
 	if (!BASS_Init(-1, 44100, BASS_DEVICE_3D, 0, NULL))
 	{
@@ -13,13 +11,13 @@ void SoundManager::Initialize()
 	m_initialized = true;
 }
 
-void SoundManager::Shutdown()
+void sound::SoundManager::Shutdown()
 {
 	BASS_Stop();
 	BASS_Free();
 }
 
-void SoundManager::Play(Sound& sound_)
+void sound::SoundManager::Play(Sound& sound_)
 {
 	if (!m_initialized)
 		return;
@@ -29,7 +27,7 @@ void SoundManager::Play(Sound& sound_)
 	sound_.stream_handle = hstream;
 }
 
-void SoundManager::Stop(Sound& sound_)
+void sound::SoundManager::Stop(Sound& sound_)
 {
 	if (!m_initialized)
 		return;
@@ -37,7 +35,7 @@ void SoundManager::Stop(Sound& sound_)
 	BASS_ChannelStop(sound_.stream_handle);
 }
 
-void SoundManager::SetVolume(float volume_)
+void sound::SoundManager::SetVolume(float volume_)
 {
 	if (!m_initialized)
 		return;

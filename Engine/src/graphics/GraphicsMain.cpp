@@ -33,9 +33,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 	}
 	catch (const std::exception& e)
 	{
-#ifdef _DEBUG
 		std::cerr << e.what() << "\n";
-#endif
 		return false;
 	}
 	return true;

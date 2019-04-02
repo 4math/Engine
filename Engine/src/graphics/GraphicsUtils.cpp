@@ -1,6 +1,6 @@
 #include "GraphicsUtils.h"
 
-std::vector<VkExtensionProperties> ListInstanceExtensions(bool print_)
+std::vector<VkExtensionProperties> graphics::ListInstanceExtensions(bool print_)
 {
 	uint32_t extension_count = 0;
 	vkEnumerateInstanceExtensionProperties(nullptr, &extension_count, nullptr);
@@ -15,7 +15,7 @@ std::vector<VkExtensionProperties> ListInstanceExtensions(bool print_)
 	return extensions;
 }
 
-bool CheckValidationLayerSupport(std::vector<const char*> &validation_layers_)
+bool graphics::CheckValidationLayerSupport(std::vector<const char*> &validation_layers_)
 {
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -42,7 +42,7 @@ bool CheckValidationLayerSupport(std::vector<const char*> &validation_layers_)
 	return true;
 }
 
-std::vector<VkPhysicalDevice> ListPhysicalDevices(VkInstance instance_)
+std::vector<VkPhysicalDevice> graphics::ListPhysicalDevices(VkInstance instance_)
 {
 	uint32_t device_count = 0;
 	vkEnumeratePhysicalDevices(instance_, &device_count, nullptr);
@@ -53,7 +53,7 @@ std::vector<VkPhysicalDevice> ListPhysicalDevices(VkInstance instance_)
 	return devices;
 }
 
-QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device_)
+graphics::QueueFamilyIndices graphics::FindQueueFamilies(VkPhysicalDevice device_)
 {
 	QueueFamilyIndices indices;
 
@@ -80,7 +80,7 @@ QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device_)
 	return indices;
 }
 
-std::string FormatVkResult(VkResult code_)
+std::string graphics::FormatVkResult(VkResult code_)
 {
 	switch (code_)
 	{
@@ -122,7 +122,7 @@ std::string FormatVkResult(VkResult code_)
 	return std::string("UNKNOWN");
 }
 
-bool IsDeviceSuitable(VkPhysicalDevice device_) 
+bool graphics::IsDeviceSuitable(VkPhysicalDevice device_)
 {
 	QueueFamilyIndices indices = FindQueueFamilies(device_);
 	return indices.IsComplete();
