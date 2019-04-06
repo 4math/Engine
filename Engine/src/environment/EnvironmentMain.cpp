@@ -127,3 +127,8 @@ bool environment::EnvironmentManager::IsWindowCreated()
 {
 	return (m_window == nullptr || m_window_type == environment::NO_WINDOW) ? false : true;
 }
+
+HWND environment::EnvironmentManager::GetWindowHandle()
+{
+	return glfwGetWin32Window(m_window);
+}

@@ -1,11 +1,14 @@
 #pragma once
 
-#include "../environment/EnvironmentMain.h"
+#define VK_USE_PLATFORM_WIN32_KHR
 #include "vulkan/vulkan.h"
+
+#include "../environment/EnvironmentMain.h"
 #include "GraphicsUtils.h"
 #include <iostream>
 #include <optional>
 #include <cstring>
+#include <set>
 
 namespace graphics
 {
@@ -26,6 +29,8 @@ namespace graphics
 		VkPhysicalDevice m_vk_physical_device = VK_NULL_HANDLE;
 		VkDevice m_vk_device = VK_NULL_HANDLE;
 		VkQueue m_vk_graphics_queue = VK_NULL_HANDLE;
+		VkQueue m_vk_present_queue = VK_NULL_HANDLE;
+		VkSurfaceKHR m_vk_surface = VK_NULL_HANDLE;
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
@@ -44,6 +49,10 @@ namespace graphics
 		void SetupDebugMessenger();
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
+		void CreateSurface();
+
+		bool IsDeviceSuitable(VkPhysicalDevice device_);
+		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device_);
 
 		std::vector<const char*> GetRequiredExtensions();
 		VkResult CreateDebugUtilsMessengerEXT(

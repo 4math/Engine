@@ -4,7 +4,9 @@
 #include <Windows.h>
 
 #define GLFW_INCLUDE_VULKAN
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3.h"
+#include "GLFW/glfw3native.h"
 
 #include "InputMain.h"
 
@@ -63,6 +65,7 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		void ProcessMessages();
 		bool ShouldFinish();
 		bool IsWindowCreated();
+		HWND GetWindowHandle();
 
 		InputManager* Input() const { return m_input_manager; }
 	};
