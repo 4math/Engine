@@ -53,33 +53,6 @@ std::vector<VkPhysicalDevice> graphics::ListPhysicalDevices(VkInstance instance_
 	return devices;
 }
 
-graphics::QueueFamilyIndices graphics::FindQueueFamilies(VkPhysicalDevice device_)
-{
-	QueueFamilyIndices indices;
-
-	uint32_t queue_family_count = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(device_, &queue_family_count, nullptr);
-
-	std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
-	vkGetPhysicalDeviceQueueFamilyProperties(device_, &queue_family_count, queue_families.data());
-
-	int i = 0;
-	for (const auto& queue_family : queue_families)
-	{
-		if (queue_family.queueCount > 0 && queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-		{
-			indices.graphics_family = i;
-		}
-
-		if (indices.IsComplete()) 
-			break;
-
-		i++;
-	}
-
-	return indices;
-}
-
 std::string graphics::FormatVkResult(VkResult code_)
 {
 	switch (code_)
@@ -120,10 +93,4 @@ std::string graphics::FormatVkResult(VkResult code_)
 	default: return std::string("UNKNOWN");
 	}
 	return std::string("UNKNOWN");
-}
-
-bool graphics::IsDeviceSuitable(VkPhysicalDevice device_)
-{
-	QueueFamilyIndices indices = FindQueueFamilies(device_);
-	return indices.IsComplete();
 }

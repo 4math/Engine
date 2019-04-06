@@ -12,9 +12,8 @@ void graphics::GraphicsManager::Shutdown()
 {
 	vkDestroyDevice(m_vk_device, nullptr);
 	if (m_enable_validation_layers)
-	{
 		DestroyDebugUtilsMessengerEXT(nullptr);
-	}
+	vkDestroySurfaceKHR(m_vk_instance, m_vk_surface, nullptr);
 	vkDestroyInstance(m_vk_instance, nullptr);
 	m_initialized = false;
 }
@@ -28,6 +27,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 	{
 		CreateInstance();
 		SetupDebugMessenger();
+		CreateSurface();
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 	}
@@ -120,18 +120,26 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 
 	float queue_priority = 1.0f;
 
-	VkDeviceQueueCreateInfo queue_create_info = {};
-	queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queue_create_info.queueCount = 1;
-	queue_create_info.queueFamilyIndex = indices.graphics_family.value();
-	queue_create_info.pQueuePriorities = &queue_priority;
+	std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+	std::set<uint32_t> unique_queue_families = { indices.graphics_family.value(), indices.present_family.value() };
+
+	for (auto queue_family : unique_queue_families)
+	{
+		VkDeviceQueueCreateInfo queue_create_info = {};
+		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queue_create_info.queueCount = 1;
+		queue_create_info.queueFamilyIndex = queue_family;
+		queue_create_info.pQueuePriorities = &queue_priority;
+
+		queue_create_infos.push_back(queue_create_info);
+	}
 
 	VkPhysicalDeviceFeatures device_features = {};
 
 	VkDeviceCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	create_info.pQueueCreateInfos = &queue_create_info;
-	create_info.queueCreateInfoCount = 1;
+	create_info.pQueueCreateInfos = queue_create_infos.data();
+	create_info.queueCreateInfoCount = queue_create_infos.size();
 	create_info.pEnabledFeatures = &device_features;
 	create_info.enabledExtensionCount = 0;
 	create_info.enabledLayerCount = 0;
@@ -141,6 +149,20 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 		throw std::runtime_error("Failed to create VkDevice, error: " + FormatVkResult(result));
 
 	vkGetDeviceQueue(m_vk_device, indices.graphics_family.value(), 0, &m_vk_graphics_queue);
+	vkGetDeviceQueue(m_vk_device, indices.present_family.value(), 0, &m_vk_present_queue);
+}
+
+void graphics::GraphicsManager::CreateSurface()
+{
+	VkWin32SurfaceCreateInfoKHR create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	create_info.hwnd = m_environment_manager->GetWindowHandle();
+	create_info.hinstance = GetModuleHandle(nullptr);
+
+	auto result = vkCreateWin32SurfaceKHR(m_vk_instance, &create_info, nullptr, &m_vk_surface);
+
+	if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to create VkSurface, error: " + FormatVkResult(result));
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
@@ -164,6 +186,43 @@ VkResult graphics::GraphicsManager::CreateDebugUtilsMessengerEXT(
 		return func(m_vk_instance, create_info_, allocator_, &m_vk_debug_messenger);
 	else
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
+}
+
+bool graphics::GraphicsManager::IsDeviceSuitable(VkPhysicalDevice device_)
+{
+	QueueFamilyIndices indices = FindQueueFamilies(device_);
+	return indices.IsComplete();
+}
+
+graphics::QueueFamilyIndices graphics::GraphicsManager::FindQueueFamilies(VkPhysicalDevice device_)
+{
+	QueueFamilyIndices indices;
+
+	uint32_t queue_family_count = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(device_, &queue_family_count, nullptr);
+
+	std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
+	vkGetPhysicalDeviceQueueFamilyProperties(device_, &queue_family_count, queue_families.data());
+
+	int i = 0;
+	for (const auto& queue_family : queue_families)
+	{
+		if (queue_family.queueCount > 0 && queue_family.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+			indices.graphics_family = i;
+
+		VkBool32 present_support = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(device_, i, m_vk_surface, &present_support);
+
+		if (queue_family.queueCount > 0 && present_support) 
+			indices.present_family = i;
+
+		if (indices.IsComplete())
+			break;
+
+		i++;
+	}
+
+	return indices;
 }
 
 void graphics::GraphicsManager::DestroyDebugUtilsMessengerEXT(const VkAllocationCallbacks* allocator_)
