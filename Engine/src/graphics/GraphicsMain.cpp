@@ -13,8 +13,13 @@ void graphics::GraphicsManager::Shutdown()
 	vkDestroyDevice(m_vk_device, nullptr);
 	if (m_enable_validation_layers)
 		DestroyDebugUtilsMessengerEXT(nullptr);
-	vkDestroySurfaceKHR(m_vk_instance, m_vk_surface, nullptr);
-	vkDestroyInstance(m_vk_instance, nullptr);
+
+	if (m_vk_instance != VK_NULL_HANDLE)
+	{
+		vkDestroySurfaceKHR(m_vk_instance, m_vk_surface, nullptr);
+		vkDestroyInstance(m_vk_instance, nullptr);
+	}
+
 	m_initialized = false;
 }
 
