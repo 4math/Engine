@@ -4,14 +4,9 @@ using namespace engine;
 
 void Engine::Initiailize()
 {
-	m_environment_manager = std::make_shared<environment::EnvironmentManager>
-		(environment::EnvironmentManager(500, 500, m_app_name, environment::WINDOWED));
-
-	m_graphics_manager = std::make_shared<graphics::GraphicsManager>
-		(graphics::GraphicsManager(m_environment_manager));
-
-	m_sound_manager = std::make_shared<sound::SoundManager>
-		(sound::SoundManager());
+	m_environment_manager = std::make_shared<environment::EnvironmentManager>(500, 500, m_app_name, environment::WINDOWED);
+	m_graphics_manager = std::make_shared<graphics::GraphicsManager>(m_environment_manager);
+	m_sound_manager = std::make_shared<sound::SoundManager>();
 
 	m_initialized = true;
 }

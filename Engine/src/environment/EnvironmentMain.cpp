@@ -19,12 +19,6 @@ void environment::EnvironmentManager::Initialize(bool create_window_)
 
 void environment::EnvironmentManager::Shutdown()
 {
-	if (m_input_manager != nullptr)
-	{
-		delete m_input_manager;
-		m_input_manager = nullptr;
-	}
-
 	glfwPollEvents();
 	DestroyWindow();
 	glfwTerminate();
@@ -34,7 +28,7 @@ int environment::EnvironmentManager::CreateWindowedWindow()
 {
 	if ((m_window = glfwCreateWindow(m_window_width, m_window_height, m_window_title.c_str(), nullptr, nullptr)) != NULL)
 	{
-		m_input_manager = new InputManager(m_window);
+		m_input_manager = std::make_shared<InputManager>(m_window);
 		return environment::EXIT_CODE_OK;
 	}
 
@@ -47,7 +41,7 @@ int environment::EnvironmentManager::CreateFullscreenWindow()
 {
 	if ((m_window = glfwCreateWindow(m_window_width, m_window_height, m_window_title.c_str(), m_monitor, nullptr)) != NULL)
 	{
-		m_input_manager = new InputManager(m_window);
+		m_input_manager = std::make_shared<InputManager>(m_window);
 		return environment::EXIT_CODE_OK;
 	}
 
@@ -65,7 +59,7 @@ int environment::EnvironmentManager::CreateBorderlessWindow()
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 	if ((m_window = glfwCreateWindow(mode->width, mode->height, m_window_title.c_str(), m_monitor, nullptr)) != NULL)
 	{
-		m_input_manager = new InputManager(m_window);
+		m_input_manager = std::make_shared<InputManager>(m_window);
 		return environment::EXIT_CODE_OK;
 	}
 
