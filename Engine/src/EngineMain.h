@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "environment/EnvironmentMain.h"
 #include "environment/InputMain.h"
 #include "graphics/GraphicsMain.h"
@@ -16,9 +18,9 @@ namespace engine
 		// VARIABLES
 	private:
 		bool m_initialized = false;
-		graphics::GraphicsManager* m_graphics_manager = nullptr;
-		sound::SoundManager* m_sound_manager = nullptr;
-		environment::EnvironmentManager* m_environment_manager = nullptr;
+		std::shared_ptr<graphics::GraphicsManager> m_graphics_manager;
+		std::shared_ptr<sound::SoundManager> m_sound_manager;
+		std::shared_ptr<environment::EnvironmentManager> m_environment_manager;
 
 		std::string m_app_name;
 		bool m_should_finish = false;
@@ -27,7 +29,7 @@ namespace engine
 	public:
 		Engine(const std::string& app_name_) : m_app_name(app_name_) { Initiailize(); }
 		Engine() : m_app_name("default app") { Initiailize(); }
-		virtual ~Engine() { Shutdown(); };
+		virtual ~Engine() { /* Shutdown(); */ };
 
 		// METHODES
 	private:
@@ -37,9 +39,9 @@ namespace engine
 	protected:
 		virtual void FrameAction() = 0;
 
-		graphics::GraphicsManager* Graphics() { return m_graphics_manager; }
-		sound::SoundManager* Sound() { return m_sound_manager; }
-		environment::EnvironmentManager* Environment() { return m_environment_manager; }
+		std::shared_ptr<graphics::GraphicsManager> Graphics() { return m_graphics_manager; }
+		std::shared_ptr<sound::SoundManager> Sound() { return m_sound_manager; }
+		std::shared_ptr<environment::EnvironmentManager> Environment() { return m_environment_manager; }
 
 		std::string AppName() { return m_app_name; }
 
