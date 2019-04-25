@@ -90,7 +90,7 @@ std::string graphics::FormatVkResult(VkResult code_)
 	case VK_ERROR_INVALID_DEVICE_ADDRESS_EXT: return std::string("VK_ERROR_INVALID_DEVICE_ADDRESS_EXT");
 	case VK_RESULT_RANGE_SIZE: return std::string("VK_RESULT_RANGE_SIZE");
 	case VK_RESULT_MAX_ENUM: return std::string("VK_RESULT_MAX_ENUM");
-	default: return std::string("UNKNOWN");
+	default: break;
 	}
 	return std::string("UNKNOWN");
 }
