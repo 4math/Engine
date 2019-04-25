@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <memory>
 #include <Windows.h>
 
 #define GLFW_INCLUDE_VULKAN
@@ -39,7 +40,7 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		GLFWmonitor* m_monitor = nullptr;
 		GLFWwindow* m_window = nullptr;
 
-		InputManager* m_input_manager = nullptr;
+		std::shared_ptr<InputManager> m_input_manager;
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
@@ -67,7 +68,7 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		bool IsWindowCreated();
 		HWND GetWindowHandle();
 
-		InputManager* Input() const { return m_input_manager; }
+		std::shared_ptr<InputManager> Input() { return m_input_manager; }
 	};
 
 }

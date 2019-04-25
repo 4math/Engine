@@ -9,6 +9,7 @@
 #include <optional>
 #include <cstring>
 #include <set>
+#include <memory>
 
 namespace graphics
 {
@@ -17,7 +18,7 @@ namespace graphics
 		// VARIABLES
 	private:
 		bool m_initialized = false;
-		environment::EnvironmentManager* m_environment_manager = nullptr;
+		std::shared_ptr<environment::EnvironmentManager> m_environment_manager;
 		std::string m_engine_name;
 		std::string m_app_name;
 
@@ -34,9 +35,10 @@ namespace graphics
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
-		GraphicsManager(environment::EnvironmentManager* environment_manager_, 
+		GraphicsManager(std::shared_ptr<environment::EnvironmentManager> environment_manager_, 
 			const std::string& engine_name_ = "Engine", const std::string& app_name_ = "Default App") : 
 			m_environment_manager(environment_manager_), m_engine_name(engine_name_), m_app_name(app_name_) { Initialize(); }
+
 		~GraphicsManager() { Shutdown(); }
 
 		// METHODES

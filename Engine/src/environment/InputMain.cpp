@@ -24,7 +24,7 @@ bool environment::InputManager::KeyPressed(int key_id_)
 
 void environment::InputManager::KeyCallback(GLFWwindow* window_, int key_id_, int scancode_, int action_, int mods_)
 {
-	InputManager* input_manager = static_cast<InputManager*>(glfwGetWindowUserPointer(window_));
+	InputManager* input_manager = (InputManager*)glfwGetWindowUserPointer(window_);
 
 	if (action_ == GLFW_PRESS)
 		input_manager->SetKeyState(key_id_, true);
