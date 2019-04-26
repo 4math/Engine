@@ -146,7 +146,8 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 	create_info.pQueueCreateInfos = queue_create_infos.data();
 	create_info.queueCreateInfoCount = queue_create_infos.size();
 	create_info.pEnabledFeatures = &device_features;
-	create_info.enabledExtensionCount = 0;
+	create_info.ppEnabledExtensionNames = device_extensions.data();
+	create_info.enabledExtensionCount = device_extensions.size();
 	create_info.enabledLayerCount = 0;
 
 	auto result = vkCreateDevice(m_vk_physical_device, &create_info, nullptr, &m_vk_device);
@@ -196,7 +197,33 @@ VkResult graphics::GraphicsManager::CreateDebugUtilsMessengerEXT(
 bool graphics::GraphicsManager::IsDeviceSuitable(VkPhysicalDevice device_)
 {
 	QueueFamilyIndices indices = FindQueueFamilies(device_);
-	return indices.IsComplete();
+
+	bool extensions_supported = CheckDeviceExtensionSupport(device_);
+
+	bool swap_chain_adequate = false;
+	if (extensions_supported)
+	{
+		SwapChainSupportDetails swap_chain_details = QuerySwapChainSupport(device_, m_vk_surface);
+		swap_chain_adequate = !swap_chain_details.formats.empty() && !swap_chain_details.present_modes.empty();
+	}
+
+	return indices.IsComplete() && extensions_supported && swap_chain_adequate;
+}
+
+bool graphics::GraphicsManager::CheckDeviceExtensionSupport(VkPhysicalDevice device_) 
+{
+	uint32_t extension_count;
+	vkEnumerateDeviceExtensionProperties(device_, nullptr, &extension_count, nullptr);
+
+	std::vector<VkExtensionProperties> available_extensions(extension_count);
+	vkEnumerateDeviceExtensionProperties(device_, nullptr, &extension_count, available_extensions.data());
+
+	std::set<std::string> required_extensions(device_extensions.begin(), device_extensions.end());
+
+	for (const auto& extension : available_extensions)
+		required_extensions.erase(extension.extensionName);
+
+	return required_extensions.empty();
 }
 
 graphics::QueueFamilyIndices graphics::GraphicsManager::FindQueueFamilies(VkPhysicalDevice device_)

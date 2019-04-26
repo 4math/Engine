@@ -94,3 +94,71 @@ std::string graphics::FormatVkResult(VkResult code_)
 	}
 	return std::string("UNKNOWN");
 }
+
+graphics::SwapChainSupportDetails graphics::QuerySwapChainSupport(VkPhysicalDevice device_, VkSurfaceKHR surface_)
+{
+	SwapChainSupportDetails details;
+
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device_, surface_, &details.capabilities);
+
+	uint32_t format_count = 0;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(device_, surface_, &format_count, nullptr);
+
+	if (format_count != 0)
+	{
+		details.formats.resize(format_count);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device_, surface_, &format_count, details.formats.data());
+	}
+
+	uint32_t present_mode_count;
+	vkGetPhysicalDeviceSurfacePresentModesKHR(device_, surface_, &present_mode_count, nullptr);
+
+	if (present_mode_count != 0) {
+		details.present_modes.resize(present_mode_count);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device_, surface_, &present_mode_count, details.present_modes.data());
+	}
+
+	return details;
+}
+
+VkSurfaceFormatKHR graphics::ÑhooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats_)
+{
+	if (available_formats_.size() == 1 && available_formats_[0].format == VK_FORMAT_UNDEFINED)
+		return { VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
+
+	for (const auto& available_format : available_formats_)
+		if (available_format.format == VK_FORMAT_B8G8R8A8_UNORM && available_format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			return available_format;
+
+	return available_formats_[0];
+}
+
+VkPresentModeKHR graphics::ÑhooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes_) 
+{
+	VkPresentModeKHR best = VK_PRESENT_MODE_FIFO_KHR;
+
+	for (const auto& available_present_mode : available_present_modes_) {
+		if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR)
+			return available_present_mode;
+		else if (available_present_mode == VK_PRESENT_MODE_IMMEDIATE_KHR)
+			best = available_present_mode;
+	}
+
+	return best;
+}
+
+VkExtent2D graphics::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities_, int width_, int height_) 
+{
+	if (capabilities_.currentExtent.width != std::numeric_limits<uint32_t>::max()) 
+	{
+		return capabilities_.currentExtent;
+	}
+	else {
+		VkExtent2D actual_extent = { width_, height_ };
+
+		actual_extent.width = std::max(capabilities_.minImageExtent.width, std::min(capabilities_.maxImageExtent.width, actual_extent.width));
+		actual_extent.height = std::max(capabilities_.minImageExtent.height, std::min(capabilities_.maxImageExtent.height, actual_extent.height));
+
+		return actual_extent;
+	}
+}
