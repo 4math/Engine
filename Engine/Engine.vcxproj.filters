@@ -36,6 +36,9 @@
     <ClCompile Include="src\graphics\GraphicsUtils.cpp">
       <Filter>Engine\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\GraphicsShaders.cpp">
+      <Filter>Engine\Graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\graphics\GraphicsMain.h">
@@ -57,6 +60,9 @@
       <Filter>Engine\Environment</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\GraphicsUtils.h">
+      <Filter>Engine\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\GraphicsShaders.h">
       <Filter>Engine\Graphics</Filter>
     </ClInclude>
   </ItemGroup>
