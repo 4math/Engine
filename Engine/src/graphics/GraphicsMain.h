@@ -25,6 +25,12 @@ namespace graphics
 		bool m_enable_validation_layers = false;
 		std::vector<const char*> m_validation_layers = { "VK_LAYER_LUNARG_standard_validation" };
 
+		std::vector<VkImage> m_vk_swapchain_images;
+		VkFormat m_vk_swapchain_image_format;
+		VkExtent2D m_vk_swapchain_extent;
+
+		std::vector<VkImageView> m_vk_image_views;
+
 		VkInstance m_vk_instance = VK_NULL_HANDLE;
 		VkDebugUtilsMessengerEXT m_vk_debug_messenger = VK_NULL_HANDLE;
 		VkPhysicalDevice m_vk_physical_device = VK_NULL_HANDLE;
@@ -32,6 +38,11 @@ namespace graphics
 		VkQueue m_vk_graphics_queue = VK_NULL_HANDLE;
 		VkQueue m_vk_present_queue = VK_NULL_HANDLE;
 		VkSurfaceKHR m_vk_surface = VK_NULL_HANDLE;
+		VkSwapchainKHR m_vk_swapchain = VK_NULL_HANDLE;
+
+		const std::vector<const char*> device_extensions = {
+			VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		};
 
 		// CONSTRUCTORS/DESTRUCTORS
 	public:
@@ -52,8 +63,11 @@ namespace graphics
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
 		void CreateSurface();
+		void CreateSwapChain();
+		void CreateImageViews();
 
 		bool IsDeviceSuitable(VkPhysicalDevice device_);
+		bool CheckDeviceExtensionSupport(VkPhysicalDevice device_);
 		QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device_);
 
 		std::vector<const char*> GetRequiredExtensions();
