@@ -150,10 +150,10 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 	VkDeviceCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	create_info.pQueueCreateInfos = queue_create_infos.data();
-	create_info.queueCreateInfoCount = queue_create_infos.size();
+	create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
 	create_info.pEnabledFeatures = &device_features;
 	create_info.ppEnabledExtensionNames = device_extensions.data();
-	create_info.enabledExtensionCount = device_extensions.size();
+	create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
 	create_info.enabledLayerCount = 0;
 
 	auto result = vkCreateDevice(m_vk_physical_device, &create_info, nullptr, &m_vk_device);
