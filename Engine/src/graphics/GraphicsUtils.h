@@ -30,6 +30,7 @@ namespace graphics
 	bool CheckValidationLayerSupport(std::vector<const char*> &validation_layers_);
 	std::vector<VkPhysicalDevice> ListPhysicalDevices(VkInstance instance_);
 	std::string FormatVkResult(VkResult code_);
+
 	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device_, VkSurfaceKHR surface_);
 	VkSurfaceFormatKHR ÑhooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats_);
 	VkPresentModeKHR ÑhooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes_);

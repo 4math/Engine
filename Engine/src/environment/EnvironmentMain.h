@@ -68,6 +68,9 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		bool IsWindowCreated();
 		HWND GetWindowHandle();
 
+		int WindowWidth() { return m_window_width; }
+		int WindowHeight() { return m_window_height; }
+
 		std::shared_ptr<InputManager> Input() { return m_input_manager; }
 	};
 

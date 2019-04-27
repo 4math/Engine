@@ -10,6 +10,7 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	vkDestroySwapchainKHR(m_vk_device, m_vk_swapchain, nullptr);
 	vkDestroyDevice(m_vk_device, nullptr);
 	if (m_enable_validation_layers)
 		DestroyDebugUtilsMessengerEXT(nullptr);
@@ -35,6 +36,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateSurface();
 		PickPhysicalDevice();
 		CreateLogicalDevice();
+		CreateSwapChain();
 	}
 	catch (const std::exception& e)
 	{
@@ -88,7 +90,7 @@ void graphics::GraphicsManager::SetupDebugMessenger()
 	create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
 	create_info.messageSeverity =
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | 
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 	// Add VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT for full info
 	create_info.messageType =
@@ -169,6 +171,54 @@ void graphics::GraphicsManager::CreateSurface()
 
 	if (result != VK_SUCCESS)
 		throw std::runtime_error("Failed to create VkSurface, error: " + FormatVkResult(result));
+}
+
+void graphics::GraphicsManager::CreateSwapChain()
+{
+	SwapChainSupportDetails swapchain_support = QuerySwapChainSupport(m_vk_physical_device, m_vk_surface);
+
+	VkSurfaceFormatKHR surface_format = ÑhooseSwapSurfaceFormat(swapchain_support.formats);
+	VkPresentModeKHR present_mode = ÑhooseSwapPresentMode(swapchain_support.present_modes);
+	VkExtent2D extent = ChooseSwapExtent(swapchain_support.capabilities, m_environment_manager->WindowWidth(), m_environment_manager->WindowHeight());
+
+	uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;
+	if (swapchain_support.capabilities.maxImageCount > 0 && image_count > swapchain_support.capabilities.maxImageCount)
+		image_count = swapchain_support.capabilities.maxImageCount;
+
+	VkSwapchainCreateInfoKHR create_info = {};
+	create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	create_info.surface = m_vk_surface;
+	create_info.minImageCount = image_count;
+	create_info.imageFormat = surface_format.format;
+	create_info.imageColorSpace = surface_format.colorSpace;
+	create_info.imageExtent = extent;
+	create_info.imageArrayLayers = 1;
+	create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	create_info.preTransform = swapchain_support.capabilities.currentTransform;
+	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	create_info.presentMode = present_mode;
+	create_info.clipped = VK_TRUE;
+	create_info.oldSwapchain = VK_NULL_HANDLE;
+
+	QueueFamilyIndices indices = FindQueueFamilies(m_vk_physical_device);
+	uint32_t queue_family_indices[] = { indices.graphics_family.value(), indices.present_family.value() };
+
+	if (indices.graphics_family != indices.present_family) 
+	{
+		create_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+		create_info.queueFamilyIndexCount = 2;
+		create_info.pQueueFamilyIndices = queue_family_indices;
+	}
+	else 
+	{
+		create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		create_info.queueFamilyIndexCount = 0;
+		create_info.pQueueFamilyIndices = nullptr;
+	}
+
+	auto result = vkCreateSwapchainKHR(m_vk_device, &create_info, nullptr, &m_vk_swapchain);
+	if (result != VK_SUCCESS)
+		throw std::runtime_error(FormatVkResult(result));
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()

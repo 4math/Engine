@@ -153,7 +153,8 @@ VkExtent2D graphics::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 	{
 		return capabilities_.currentExtent;
 	}
-	else {
+	else 
+	{
 		VkExtent2D actual_extent = { width_, height_ };
 
 		actual_extent.width = std::max(capabilities_.minImageExtent.width, std::min(capabilities_.maxImageExtent.width, actual_extent.width));

@@ -32,6 +32,7 @@ namespace graphics
 		VkQueue m_vk_graphics_queue = VK_NULL_HANDLE;
 		VkQueue m_vk_present_queue = VK_NULL_HANDLE;
 		VkSurfaceKHR m_vk_surface = VK_NULL_HANDLE;
+		VkSwapchainKHR m_vk_swapchain = VK_NULL_HANDLE;
 
 		const std::vector<const char*> device_extensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -56,6 +57,7 @@ namespace graphics
 		void PickPhysicalDevice();
 		void CreateLogicalDevice();
 		void CreateSurface();
+		void CreateSwapChain();
 
 		bool IsDeviceSuitable(VkPhysicalDevice device_);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device_);
