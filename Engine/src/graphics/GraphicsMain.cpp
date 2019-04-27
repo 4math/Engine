@@ -10,6 +10,9 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	for (auto image_view : m_vk_image_views)
+		vkDestroyImageView(m_vk_device, image_view, nullptr);
+
 	vkDestroySwapchainKHR(m_vk_device, m_vk_swapchain, nullptr);
 	vkDestroyDevice(m_vk_device, nullptr);
 	if (m_enable_validation_layers)
@@ -37,6 +40,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		PickPhysicalDevice();
 		CreateLogicalDevice();
 		CreateSwapChain();
+		CreateImageViews();
 	}
 	catch (const std::exception& e)
 	{
@@ -227,6 +231,33 @@ void graphics::GraphicsManager::CreateSwapChain()
 
 	m_vk_swapchain_extent = extent;
 	m_vk_swapchain_image_format = surface_format.format;
+}
+
+void graphics::GraphicsManager::CreateImageViews()
+{
+	m_vk_image_views.resize(m_vk_swapchain_images.size());
+
+	for (int i = 0; i < m_vk_image_views.size(); i++)
+	{
+		VkImageViewCreateInfo create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		create_info.image = m_vk_swapchain_images[i];
+		create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+		create_info.format = m_vk_swapchain_image_format;
+		create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+		create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+		create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+		create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+		create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		create_info.subresourceRange.baseArrayLayer = 0;
+		create_info.subresourceRange.baseMipLevel = 0;
+		create_info.subresourceRange.levelCount = 1;
+		create_info.subresourceRange.layerCount = 1;
+
+		auto result = vkCreateImageView(m_vk_device, &create_info, nullptr, &m_vk_image_views[i]);
+		if (result != VK_SUCCESS)
+			throw std::runtime_error(FormatVkResult(result));
+	}
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
