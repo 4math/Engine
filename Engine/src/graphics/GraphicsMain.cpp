@@ -219,6 +219,14 @@ void graphics::GraphicsManager::CreateSwapChain()
 	auto result = vkCreateSwapchainKHR(m_vk_device, &create_info, nullptr, &m_vk_swapchain);
 	if (result != VK_SUCCESS)
 		throw std::runtime_error(FormatVkResult(result));
+
+	uint32_t swapchain_image_count = 0;
+	vkGetSwapchainImagesKHR(m_vk_device, m_vk_swapchain, &swapchain_image_count, nullptr);
+	m_vk_swapchain_images.resize(swapchain_image_count);
+	vkGetSwapchainImagesKHR(m_vk_device, m_vk_swapchain, &swapchain_image_count, m_vk_swapchain_images.data());
+
+	m_vk_swapchain_extent = extent;
+	m_vk_swapchain_image_format = surface_format.format;
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
