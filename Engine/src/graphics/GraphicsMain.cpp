@@ -10,9 +10,13 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	for (auto framebuffer : m_vk_swapchain_framebuffers)
+		vkDestroyFramebuffer(m_vk_device, framebuffer, nullptr);
+
 	vkDestroyPipeline(m_vk_device, m_vk_graphics_pipeline, nullptr);
 	vkDestroyPipelineLayout(m_vk_device, m_vk_pipeline_layout, nullptr);
 	vkDestroyRenderPass(m_vk_device, m_vk_render_pass, nullptr);
+
 	for (auto image_view : m_vk_image_views)
 		vkDestroyImageView(m_vk_device, image_view, nullptr);
 
@@ -47,6 +51,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateImageViews();
 		CreateRenderPass();
 		CreateGraphicsPipeline();
+		CreateFramebuffers();
 	}
 	catch (const std::exception& e)
 	{
@@ -449,6 +454,30 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 
 	vkDestroyShaderModule(m_vk_device, frag_shader_module, nullptr);
 	vkDestroyShaderModule(m_vk_device, vert_shader_module, nullptr);
+}
+
+void graphics::GraphicsManager::CreateFramebuffers()
+{
+	m_vk_swapchain_framebuffers.resize(m_vk_image_views.size());
+	for (size_t i = 0; i < m_vk_image_views.size(); i++)
+	{
+		VkImageView attachments[] = { m_vk_image_views[i] };
+
+		VkFramebufferCreateInfo frameduffer_info = {};
+		frameduffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		frameduffer_info.renderPass = m_vk_render_pass;
+		frameduffer_info.attachmentCount = 1;
+		frameduffer_info.pAttachments = attachments;
+		frameduffer_info.width = m_vk_swapchain_extent.width;
+		frameduffer_info.height = m_vk_swapchain_extent.height;
+		frameduffer_info.layers = 1;
+		
+		auto result = vkCreateFramebuffer(m_vk_device, &frameduffer_info, nullptr, &m_vk_swapchain_framebuffers[i]);
+		if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create framebuffer!");
+		}
+	}
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
