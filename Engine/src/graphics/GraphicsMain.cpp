@@ -11,9 +11,7 @@ void graphics::GraphicsManager::Initialize()
 void graphics::GraphicsManager::Shutdown()
 {
 	for (auto framebuffer : m_vk_swapchain_framebuffers)
-	{
 		vkDestroyFramebuffer(m_vk_device, framebuffer, nullptr);
-	}
 
 	vkDestroyPipeline(m_vk_device, m_vk_graphics_pipeline, nullptr);
 	vkDestroyPipelineLayout(m_vk_device, m_vk_pipeline_layout, nullptr);
