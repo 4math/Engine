@@ -36,7 +36,4 @@ namespace graphics
 	VkSurfaceFormatKHR ÑhooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats_);
 	VkPresentModeKHR ÑhooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes_);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities_, int width_, int height_);
-
-	std::vector<char> ReadShader(const std::string& shaderName_);
-	VkShaderModule CreateShaderModule(const std::vector<char>& code_, VkDevice device_);
 }

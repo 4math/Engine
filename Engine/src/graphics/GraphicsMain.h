@@ -4,6 +4,7 @@
 #include "vulkan/vulkan.h"
 
 #include "../environment/EnvironmentMain.h"
+#include "GraphicsShaders.h"
 #include "GraphicsUtils.h"
 #include <iostream>
 #include <optional>
@@ -18,6 +19,7 @@ namespace graphics
 		// VARIABLES
 	private:
 		bool m_initialized = false;
+		std::shared_ptr<graphics::ShaderManager> m_shader_manager;
 		std::shared_ptr<environment::EnvironmentManager> m_environment_manager;
 		std::string m_engine_name;
 		std::string m_app_name;

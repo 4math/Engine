@@ -30,13 +30,12 @@ void graphics::GraphicsManager::Shutdown()
 	m_initialized = false;
 }
 
-using namespace std;
-
 bool graphics::GraphicsManager::InitializeVulkan()
 {
 #ifdef _DEBUG
 	m_enable_validation_layers = true;
 #endif
+	m_shader_manager = std::make_shared<graphics::ShaderManager>("src/shaders/");
 	try
 	{
 		CreateInstance();
@@ -309,12 +308,10 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 {
 	// using normalized device coordinates 
 	// compiled SPIR-V shaders 
-	auto vert_shader_code = ReadShader("src/shaders/BasicVert.spv");
-	auto frag_shader_code = ReadShader("src/shaders/BasicFrag.spv");
 
 // shader module and stages creation 
-	VkShaderModule vert_shader_module = CreateShaderModule(vert_shader_code, m_vk_device);
-	VkShaderModule frag_shader_module = CreateShaderModule(frag_shader_code, m_vk_device);
+	VkShaderModule vert_shader_module = m_shader_manager->CreateShaderModule("BasicVert.spv", BinaryInput, m_vk_device);
+	VkShaderModule frag_shader_module = m_shader_manager->CreateShaderModule("BasicFrag.spv", BinaryInput, m_vk_device);
 
 	VkPipelineShaderStageCreateInfo vert_shader_create_info = {};
 	vert_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -412,28 +409,16 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 	color_blending.logicOp = VK_LOGIC_OP_COPY;	// Optional
 	color_blending.attachmentCount = 1;
 	color_blending.pAttachments = &color_blend_attachment;
-	// Optional
-	color_blending.blendConstants[0] = 0.0f;
-	color_blending.blendConstants[1] = 0.0f;
-	color_blending.blendConstants[2] = 0.0f;
-	color_blending.blendConstants[3] = 0.0f;
-	// 
 
-// Pipeline layout
+// Pipeline layout 
 	VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 	pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	// Optional 
-	pipeline_layout_info.setLayoutCount = 0;
-	pipeline_layout_info.pSetLayouts = nullptr;
-	pipeline_layout_info.pushConstantRangeCount = 0;
-	pipeline_layout_info.pPushConstantRanges = nullptr;
-	// 
 
 	auto pipeline_layout_creation_result = vkCreatePipelineLayout(m_vk_device, &pipeline_layout_info, nullptr, &m_vk_pipeline_layout);
 	if (pipeline_layout_creation_result != VK_SUCCESS)
 		throw std::runtime_error("Failed to create pipeline layout!");
 
-// Graphics pipeline cretion
+// Graphics pipeline creation 
 	VkGraphicsPipelineCreateInfo pipeline_info = {};
 	pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipeline_info.stageCount = 2;

@@ -163,37 +163,3 @@ VkExtent2D graphics::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 		return actual_extent;
 	}
 }
-
-std::vector<char> graphics::ReadShader(const std::string& shaderName_)
-{
-	std::ifstream file(shaderName_, std::ios::ate | std::ios::binary);
-
-	if (!file.is_open()) {
-		throw std::runtime_error("failed to open file!");
-	}
-
-	size_t file_size = (size_t)file.tellg();
-	std::vector<char> buffer(file_size);
-	file.seekg(0);
-	file.read(buffer.data(), file_size);
-	file.close();
-
-	return buffer;
-}
-
-VkShaderModule graphics::CreateShaderModule(const std::vector<char>& code_, VkDevice device_)
-{
-
-	VkShaderModuleCreateInfo create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-	create_info.codeSize = code_.size();
-	create_info.pCode = reinterpret_cast<const uint32_t*>(code_.data());
-	VkShaderModule shader_module;
-	if (vkCreateShaderModule(device_, &create_info, nullptr, &shader_module) != VK_SUCCESS)
-	{
-		throw std::runtime_error("Failed to create shader module!");
-	}
-	return shader_module;
-
-}
- 
