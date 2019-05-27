@@ -26,8 +26,8 @@ namespace graphics
 		std::vector<const char*> m_validation_layers = { "VK_LAYER_LUNARG_standard_validation" };
 
 		std::vector<VkImage> m_vk_swapchain_images;
-		VkFormat m_vk_swapchain_image_format;
-		VkExtent2D m_vk_swapchain_extent;
+		VkFormat m_vk_swapchain_image_format = VK_FORMAT_UNDEFINED;
+		VkExtent2D m_vk_swapchain_extent = { 0, 0 };
 
 		std::vector<VkImageView> m_vk_image_views;
 
@@ -39,6 +39,9 @@ namespace graphics
 		VkQueue m_vk_present_queue = VK_NULL_HANDLE;
 		VkSurfaceKHR m_vk_surface = VK_NULL_HANDLE;
 		VkSwapchainKHR m_vk_swapchain = VK_NULL_HANDLE;
+		VkRenderPass m_vk_render_pass = VK_NULL_HANDLE;
+		VkPipelineLayout m_vk_pipeline_layout = VK_NULL_HANDLE;
+		VkPipeline m_vk_graphics_pipeline = VK_NULL_HANDLE;
 
 		const std::vector<const char*> device_extensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -65,6 +68,8 @@ namespace graphics
 		void CreateSurface();
 		void CreateSwapChain();
 		void CreateImageViews();
+		void CreateRenderPass();
+		void CreateGraphicsPipeline();
 
 		bool IsDeviceSuitable(VkPhysicalDevice device_);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device_);
