@@ -12,7 +12,7 @@ void graphics::ShaderManager::Shutdown()
 
 std::vector<char> graphics::ShaderManager::LoadShaderBinary(const std::string& file_name_)
 {
-	std::fstream input_file(file_name_, std::ios::binary | std::ios::ate | std::ios::in);
+	std::fstream input_file(m_base_dir + file_name_, std::ios::binary | std::ios::ate | std::ios::in);
 	if (!input_file.is_open())
 		throw std::runtime_error("Unable to open shader binary file");
 
