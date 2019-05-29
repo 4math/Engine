@@ -31,7 +31,7 @@ namespace graphics
 		VkFormat m_vk_swapchain_image_format = VK_FORMAT_UNDEFINED;
 		VkExtent2D m_vk_swapchain_extent = { 0, 0 };
 		std::vector<VkFramebuffer> m_vk_swapchain_framebuffers;
-
+		std::vector<VkCommandBuffer> m_vk_command_buffers;
 		std::vector<VkImageView> m_vk_image_views;
 
 		VkInstance m_vk_instance = VK_NULL_HANDLE;
@@ -76,6 +76,7 @@ namespace graphics
 		void CreateGraphicsPipeline();
 		void CreateFramebuffers();
 		void CreateCommandPool();
+		void CreateCommandBuffers();
 
 		bool IsDeviceSuitable(VkPhysicalDevice device_);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device_);
