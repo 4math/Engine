@@ -10,6 +10,11 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	vkDestroySemaphore(m_vk_device, m_semaphore_image_available, nullptr);
+	vkDestroySemaphore(m_vk_device, m_semaphore_finished, nullptr);
+
+	vkDestroyCommandPool(m_vk_device, m_vk_command_pool, nullptr);
+
 	for (auto framebuffer : m_vk_swapchain_framebuffers)
 		vkDestroyFramebuffer(m_vk_device, framebuffer, nullptr);
 
@@ -52,6 +57,9 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateRenderPass();
 		CreateGraphicsPipeline();
 		CreateFramebuffers();
+		CreateCommandPool();
+		CreateCommandBuffers();
+		CreateSemaphores();
 	}
 	catch (const std::exception& e)
 	{
@@ -478,6 +486,98 @@ void graphics::GraphicsManager::CreateFramebuffers()
 			throw std::runtime_error("Failed to create framebuffer!");
 		}
 	}
+}
+
+void graphics::GraphicsManager::CreateCommandPool()
+{
+	QueueFamilyIndices queue_familiy_indices = FindQueueFamilies(m_vk_physical_device);
+
+	VkCommandPoolCreateInfo pool_info = {};
+	pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	pool_info.queueFamilyIndex = queue_familiy_indices.graphics_family.value();
+	pool_info.flags = 0;
+	/*	VK_COMMAND_POOL_CREATE_TRANSIENT_BIT: 
+	Hint that command buffers are rerecorded with new commands very often 
+	(may change memory allocation behavior)
+		VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: 
+	Allow command buffers to be rerecorded individually, 
+	without this flag they all have to be reset together*/
+
+	auto result = vkCreateCommandPool(m_vk_device, &pool_info, nullptr, &m_vk_command_pool);
+	if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to create command pool");
+}
+
+void graphics::GraphicsManager::CreateCommandBuffers()
+{
+	m_vk_command_buffers.resize(m_vk_swapchain_framebuffers.size());
+
+	VkCommandBufferAllocateInfo allocate_info = {};
+	allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocate_info.commandPool = m_vk_command_pool;
+	allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	//	VK_COMMAND_BUFFER_LEVEL_PRIMARY: 
+	//Can be submitted to a queue for execution, but cannot be called from other command buffers.
+	//	VK_COMMAND_BUFFER_LEVEL_SECONDARY : 
+	//Cannot be submitted directly, but can be called from primary command buffers.
+	allocate_info.commandBufferCount = (uint32_t)m_vk_command_buffers.size();
+
+	auto allocate_result = vkAllocateCommandBuffers(m_vk_device, &allocate_info, m_vk_command_buffers.data());
+	if (allocate_result != VK_SUCCESS)
+		throw std::runtime_error("Failed to allocate comand buffers");
+
+	for (size_t i = 0; i < m_vk_command_buffers.size(); i++)
+	{
+		VkCommandBufferBeginInfo begin_info = {};
+		begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		begin_info.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+		//	VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT: 
+		//The command buffer will be rerecorded right after executing it once.
+		//	VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT : 
+		//This is a secondary command buffer that will be entirely within a single render pass.
+		//	VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT : 
+		//The command buffer can be resubmitted while it is also already pending execution.
+
+		auto begin_result = vkBeginCommandBuffer(m_vk_command_buffers[i], &begin_info);
+		if (begin_result != VK_SUCCESS)
+			throw std::runtime_error("Failed to begin recordig command buffer!");
+
+		VkClearValue clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
+		VkRenderPassBeginInfo render_pass_info = {};
+		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		render_pass_info.renderPass = m_vk_render_pass;
+		render_pass_info.framebuffer = m_vk_swapchain_framebuffers[i];
+		render_pass_info.renderArea.offset = { 0,0 };
+		render_pass_info.renderArea.extent = m_vk_swapchain_extent;
+		render_pass_info.clearValueCount = 1;
+		render_pass_info.pClearValues = &clear_color;
+		vkCmdBeginRenderPass(m_vk_command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+		//	VK_SUBPASS_CONTENTS_INLINE: 
+		//The render pass commands will be embedded in the primary command buffer itself
+		//and no secondary command buffers will be executed.
+		//	VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS : 
+		//The render pass commands will be executed from secondary command buffers.
+
+		vkCmdBindPipeline(m_vk_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_vk_graphics_pipeline);
+		vkCmdDraw(m_vk_command_buffers[i], 3, 1, 1, 1);
+
+		vkCmdEndRenderPass(m_vk_command_buffers[i]);
+
+		auto record_result = vkEndCommandBuffer(m_vk_command_buffers[i]);
+		if (record_result != VK_SUCCESS)
+			throw std::runtime_error("Failed to record command buffer!");
+	}
+}
+
+void graphics::GraphicsManager::CreateSemaphores()
+{
+	VkSemaphoreCreateInfo semaphore_info = {};
+	semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	auto image_avaliable_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_image_available);
+	auto finished_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_finished);
+	if (image_avaliable_result != VK_SUCCESS || finished_result != VK_SUCCESS)
+		throw std::runtime_error("Failed to create semaphores");
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()

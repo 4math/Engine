@@ -31,7 +31,7 @@ namespace graphics
 		VkFormat m_vk_swapchain_image_format = VK_FORMAT_UNDEFINED;
 		VkExtent2D m_vk_swapchain_extent = { 0, 0 };
 		std::vector<VkFramebuffer> m_vk_swapchain_framebuffers;
-
+		std::vector<VkCommandBuffer> m_vk_command_buffers;
 		std::vector<VkImageView> m_vk_image_views;
 
 		VkInstance m_vk_instance = VK_NULL_HANDLE;
@@ -45,6 +45,10 @@ namespace graphics
 		VkRenderPass m_vk_render_pass = VK_NULL_HANDLE;
 		VkPipelineLayout m_vk_pipeline_layout = VK_NULL_HANDLE;
 		VkPipeline m_vk_graphics_pipeline = VK_NULL_HANDLE;
+		VkCommandPool m_vk_command_pool = VK_NULL_HANDLE;
+
+		VkSemaphore m_semaphore_image_available;
+		VkSemaphore m_semaphore_finished;
 
 		const std::vector<const char*> device_extensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -74,6 +78,9 @@ namespace graphics
 		void CreateRenderPass();
 		void CreateGraphicsPipeline();
 		void CreateFramebuffers();
+		void CreateCommandPool();
+		void CreateCommandBuffers();
+		void CreateSemaphores();
 
 		bool IsDeviceSuitable(VkPhysicalDevice device_);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device_);
