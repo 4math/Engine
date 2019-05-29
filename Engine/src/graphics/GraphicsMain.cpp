@@ -10,6 +10,9 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	vkDestroySemaphore(m_vk_device, m_semaphore_image_available, nullptr);
+	vkDestroySemaphore(m_vk_device, m_semaphore_finished, nullptr);
+
 	vkDestroyCommandPool(m_vk_device, m_vk_command_pool, nullptr);
 
 	for (auto framebuffer : m_vk_swapchain_framebuffers)
@@ -56,6 +59,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateFramebuffers();
 		CreateCommandPool();
 		CreateCommandBuffers();
+		CreateSemaphores();
 	}
 	catch (const std::exception& e)
 	{
@@ -563,6 +567,17 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 		if (record_result != VK_SUCCESS)
 			throw std::runtime_error("Failed to record command buffer!");
 	}
+}
+
+void graphics::GraphicsManager::CreateSemaphores()
+{
+	VkSemaphoreCreateInfo semaphore_info = {};
+	semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	auto image_avaliable_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_image_available);
+	auto finished_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_finished);
+	if (image_avaliable_result != VK_SUCCESS || finished_result != VK_SUCCESS)
+		throw std::runtime_error("Failed to create semaphores");
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()

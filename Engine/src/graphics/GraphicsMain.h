@@ -47,6 +47,9 @@ namespace graphics
 		VkPipeline m_vk_graphics_pipeline = VK_NULL_HANDLE;
 		VkCommandPool m_vk_command_pool = VK_NULL_HANDLE;
 
+		VkSemaphore m_semaphore_image_available;
+		VkSemaphore m_semaphore_finished;
+
 		const std::vector<const char*> device_extensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
 		};
@@ -77,6 +80,7 @@ namespace graphics
 		void CreateFramebuffers();
 		void CreateCommandPool();
 		void CreateCommandBuffers();
+		void CreateSemaphores();
 
 		bool IsDeviceSuitable(VkPhysicalDevice device_);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device_);
