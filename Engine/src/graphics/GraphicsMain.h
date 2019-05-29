@@ -45,6 +45,7 @@ namespace graphics
 		VkRenderPass m_vk_render_pass = VK_NULL_HANDLE;
 		VkPipelineLayout m_vk_pipeline_layout = VK_NULL_HANDLE;
 		VkPipeline m_vk_graphics_pipeline = VK_NULL_HANDLE;
+		VkCommandPool m_vk_command_pool = VK_NULL_HANDLE;
 
 		const std::vector<const char*> device_extensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -74,6 +75,7 @@ namespace graphics
 		void CreateRenderPass();
 		void CreateGraphicsPipeline();
 		void CreateFramebuffers();
+		void CreateCommandPool();
 
 		bool IsDeviceSuitable(VkPhysicalDevice device_);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device_);

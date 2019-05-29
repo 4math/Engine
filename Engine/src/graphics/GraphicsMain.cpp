@@ -10,6 +10,8 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	vkDestroyCommandPool(m_vk_device, m_vk_command_pool, nullptr);
+
 	for (auto framebuffer : m_vk_swapchain_framebuffers)
 		vkDestroyFramebuffer(m_vk_device, framebuffer, nullptr);
 
@@ -52,6 +54,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateRenderPass();
 		CreateGraphicsPipeline();
 		CreateFramebuffers();
+		CreateCommandPool();
 	}
 	catch (const std::exception& e)
 	{
@@ -478,6 +481,26 @@ void graphics::GraphicsManager::CreateFramebuffers()
 			throw std::runtime_error("Failed to create framebuffer!");
 		}
 	}
+}
+
+void graphics::GraphicsManager::CreateCommandPool()
+{
+	QueueFamilyIndices queue_familiy_indices = FindQueueFamilies(m_vk_physical_device);
+
+	VkCommandPoolCreateInfo pool_info = {};
+	pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	pool_info.queueFamilyIndex = queue_familiy_indices.graphics_family.value();
+	pool_info.flags = 0;
+	/*	VK_COMMAND_POOL_CREATE_TRANSIENT_BIT: 
+	Hint that command buffers are rerecorded with new commands very often 
+	(may change memory allocation behavior)
+		VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT: 
+	Allow command buffers to be rerecorded individually, 
+	without this flag they all have to be reset together*/
+
+	auto result = vkCreateCommandPool(m_vk_device, &pool_info, nullptr, &m_vk_command_pool);
+	if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to create command pool");
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
