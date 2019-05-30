@@ -114,7 +114,8 @@ void graphics::GraphicsManager::SetupDebugMessenger()
 	create_info.messageSeverity =
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | 
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
 	// Add VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT for full info
 	create_info.messageType =
 		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
@@ -303,12 +304,22 @@ void graphics::GraphicsManager::CreateRenderPass()
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &attachment_reference;
 
+	VkSubpassDependency dependency = {};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 	VkRenderPassCreateInfo render_pass_info = {};
 	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	render_pass_info.attachmentCount = 1;
 	render_pass_info.pAttachments = &color_attachment;
 	render_pass_info.subpassCount = 1;
 	render_pass_info.pSubpasses = &subpass;
+	render_pass_info.dependencyCount = 1;
+	render_pass_info.pDependencies = &dependency;
 
 	auto result = vkCreateRenderPass(m_vk_device, &render_pass_info, nullptr, &m_vk_render_pass);
 	if (result != VK_SUCCESS)
@@ -542,15 +553,17 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 		if (begin_result != VK_SUCCESS)
 			throw std::runtime_error("Failed to begin recordig command buffer!");
 
-		VkClearValue clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass = m_vk_render_pass;
 		render_pass_info.framebuffer = m_vk_swapchain_framebuffers[i];
 		render_pass_info.renderArea.offset = { 0,0 };
 		render_pass_info.renderArea.extent = m_vk_swapchain_extent;
+
+		VkClearValue clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
 		render_pass_info.clearValueCount = 1;
 		render_pass_info.pClearValues = &clear_color;
+
 		vkCmdBeginRenderPass(m_vk_command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 		//	VK_SUBPASS_CONTENTS_INLINE: 
 		//The render pass commands will be embedded in the primary command buffer itself
@@ -559,7 +572,8 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 		//The render pass commands will be executed from secondary command buffers.
 
 		vkCmdBindPipeline(m_vk_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_vk_graphics_pipeline);
-		vkCmdDraw(m_vk_command_buffers[i], 3, 1, 1, 1);
+
+		vkCmdDraw(m_vk_command_buffers[i], 3, 1, 0, 0);
 
 		vkCmdEndRenderPass(m_vk_command_buffers[i]);
 
@@ -675,7 +689,41 @@ void graphics::GraphicsManager::DestroyDebugUtilsMessengerEXT(const VkAllocation
 
 void graphics::GraphicsManager::BeginFrame()
 {
+	uint32_t image_index;
+	vkAcquireNextImageKHR(m_vk_device, m_vk_swapchain, (std::numeric_limits<uint64_t>::max)(), 
+		m_semaphore_image_available, VK_NULL_HANDLE, &image_index);
 
+	VkSubmitInfo submit_info = {};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore wait_semaphores[] = { m_semaphore_image_available };
+	VkSemaphore signal_semaphores[] = { m_semaphore_finished };
+
+	VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submit_info.waitSemaphoreCount = 1;
+	submit_info.pWaitSemaphores = wait_semaphores;
+	submit_info.signalSemaphoreCount = 1;
+	submit_info.pSignalSemaphores = signal_semaphores;
+	submit_info.pWaitDstStageMask = wait_stages;
+	submit_info.commandBufferCount = 1;
+	submit_info.pCommandBuffers = &m_vk_command_buffers[image_index];
+	
+	auto submit_result = vkQueueSubmit(m_vk_graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
+	if (submit_result != VK_SUCCESS)
+		throw std::runtime_error("Failed to submit begin frame command buffer");
+
+
+	VkPresentInfoKHR present_info = {};
+	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	present_info.waitSemaphoreCount = 1;
+	present_info.pWaitSemaphores = signal_semaphores;
+	present_info.swapchainCount = 1;
+	VkSwapchainKHR swap_chains[] = { m_vk_swapchain };
+	present_info.pSwapchains = swap_chains;
+	present_info.pImageIndices = &image_index;
+	present_info.pResults = nullptr; // Optional, It's not necessary if only use a single swap chain 
+
+	vkQueuePresentKHR(m_vk_present_queue, &present_info);
 }
 
 void graphics::GraphicsManager::EndFrame()

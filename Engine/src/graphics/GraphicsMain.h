@@ -11,6 +11,8 @@
 #include <cstring>
 #include <set>
 #include <memory>
+#include <limits>
+#include <cstddef>
 
 namespace graphics
 {
@@ -47,8 +49,8 @@ namespace graphics
 		VkPipeline m_vk_graphics_pipeline = VK_NULL_HANDLE;
 		VkCommandPool m_vk_command_pool = VK_NULL_HANDLE;
 
-		VkSemaphore m_semaphore_image_available;
-		VkSemaphore m_semaphore_finished;
+		VkSemaphore m_semaphore_image_available = VK_NULL_HANDLE;
+		VkSemaphore m_semaphore_finished = VK_NULL_HANDLE;
 
 		const std::vector<const char*> device_extensions = {
 			VK_KHR_SWAPCHAIN_EXTENSION_NAME
