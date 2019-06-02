@@ -12,7 +12,6 @@
 #include <set>
 #include <memory>
 #include <limits>
-#include <cstddef>
 
 namespace graphics
 {
