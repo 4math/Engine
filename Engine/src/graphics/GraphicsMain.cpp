@@ -201,8 +201,8 @@ void graphics::GraphicsManager::CreateSwapChain()
 {
 	SwapChainSupportDetails swapchain_support = QuerySwapChainSupport(m_vk_physical_device, m_vk_surface);
 
-	VkSurfaceFormatKHR surface_format = ÑhooseSwapSurfaceFormat(swapchain_support.formats);
-	VkPresentModeKHR present_mode = ÑhooseSwapPresentMode(swapchain_support.present_modes);
+	VkSurfaceFormatKHR surface_format = ChooseSwapSurfaceFormat(swapchain_support.formats);
+	VkPresentModeKHR present_mode = ChooseSwapPresentMode(swapchain_support.present_modes);
 	VkExtent2D extent = ChooseSwapExtent(swapchain_support.capabilities, m_environment_manager->WindowWidth(), m_environment_manager->WindowHeight());
 
 	uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;
