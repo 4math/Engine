@@ -276,7 +276,7 @@ void graphics::GraphicsManager::CreateImageViews()
 
 		auto result = vkCreateImageView(m_vk_device, &create_info, nullptr, &m_vk_image_views[i]);
 		if (result != VK_SUCCESS)
-			throw std::runtime_error(FormatVkResult(result));
+			throw std::runtime_error("Failed to create imageView, error: " + FormatVkResult(result));
 	}
 }
 
@@ -324,7 +324,7 @@ void graphics::GraphicsManager::CreateRenderPass()
 	auto result = vkCreateRenderPass(m_vk_device, &render_pass_info, nullptr, &m_vk_render_pass);
 	if (result != VK_SUCCESS)
 	{
-		throw std::runtime_error("Failed to create render pass!");
+		throw std::runtime_error("Failed to create VkRenderPass, error: " + FormatVkResult(result));
 	}
 }
 
@@ -440,7 +440,7 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 
 	auto pipeline_layout_creation_result = vkCreatePipelineLayout(m_vk_device, &pipeline_layout_info, nullptr, &m_vk_pipeline_layout);
 	if (pipeline_layout_creation_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to create pipeline layout!");
+		throw std::runtime_error("Failed to create VkPipelineLayout, error: " + FormatVkResult(pipeline_layout_creation_result));
 
 // Graphics pipeline creation 
 	VkGraphicsPipelineCreateInfo pipeline_info = {};
@@ -468,7 +468,7 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 	auto graphics_pipeline_creation_result = vkCreateGraphicsPipelines(m_vk_device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &m_vk_graphics_pipeline);
 	if (graphics_pipeline_creation_result != VK_SUCCESS)
 	{
-		throw std::runtime_error("Failed to create graphics pipeline!");
+		throw std::runtime_error("Failed to create VkPipeline, error: " + FormatVkResult(graphics_pipeline_creation_result));
 	}
 
 	vkDestroyShaderModule(m_vk_device, frag_shader_module, nullptr);
@@ -494,7 +494,7 @@ void graphics::GraphicsManager::CreateFramebuffers()
 		auto result = vkCreateFramebuffer(m_vk_device, &frameduffer_info, nullptr, &m_vk_swapchain_framebuffers[i]);
 		if (result != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to create framebuffer!");
+			throw std::runtime_error("Failed to create VkFramebuffer, error: " + FormatVkResult(result));
 		}
 	}
 }
@@ -516,7 +516,7 @@ void graphics::GraphicsManager::CreateCommandPool()
 
 	auto result = vkCreateCommandPool(m_vk_device, &pool_info, nullptr, &m_vk_command_pool);
 	if (result != VK_SUCCESS)
-		throw std::runtime_error("Failed to create command pool");
+		throw std::runtime_error("Failed to create VkCommandPool, error: " + FormatVkResult(result));
 }
 
 void graphics::GraphicsManager::CreateCommandBuffers()
@@ -535,7 +535,7 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 
 	auto allocate_result = vkAllocateCommandBuffers(m_vk_device, &allocate_info, m_vk_command_buffers.data());
 	if (allocate_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to allocate comand buffers");
+		throw std::runtime_error("Failed to allocate comand buffers, error: " + FormatVkResult(allocate_result));
 
 	for (size_t i = 0; i < m_vk_command_buffers.size(); i++)
 	{
@@ -551,7 +551,7 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 
 		auto begin_result = vkBeginCommandBuffer(m_vk_command_buffers[i], &begin_info);
 		if (begin_result != VK_SUCCESS)
-			throw std::runtime_error("Failed to begin recordig command buffer!");
+			throw std::runtime_error("Failed to begin recordig command buffer, error: " + FormatVkResult(begin_result));
 
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -579,7 +579,7 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 
 		auto record_result = vkEndCommandBuffer(m_vk_command_buffers[i]);
 		if (record_result != VK_SUCCESS)
-			throw std::runtime_error("Failed to record command buffer!");
+			throw std::runtime_error("Failed to record command buffer, error: " + FormatVkResult(record_result));
 	}
 }
 
@@ -591,7 +591,9 @@ void graphics::GraphicsManager::CreateSemaphores()
 	auto image_avaliable_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_image_available);
 	auto finished_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_finished);
 	if (image_avaliable_result != VK_SUCCESS || finished_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to create semaphores");
+		throw std::runtime_error("Failed to create semaphores, errors: " + 
+			FormatVkResult(image_avaliable_result) + "\n" + 
+			FormatVkResult(finished_result));
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
@@ -710,7 +712,7 @@ void graphics::GraphicsManager::BeginFrame()
 	
 	auto submit_result = vkQueueSubmit(m_vk_graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
 	if (submit_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to submit begin frame command buffer");
+		throw std::runtime_error("Failed to submit begin frame command buffer, error: " + FormatVkResult(submit_result));
 
 
 	VkPresentInfoKHR present_info = {};
