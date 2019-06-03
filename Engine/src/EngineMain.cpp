@@ -4,8 +4,8 @@ using namespace engine;
 
 void Engine::Initiailize()
 {
-	m_environment_manager = std::make_shared<environment::EnvironmentManager>(800, 800, m_app_name, environment::WINDOWED);
-	m_graphics_manager = std::make_shared<graphics::GraphicsManager>(m_environment_manager);
+	m_environment_manager = std::make_shared<environment::EnvironmentManager>(800, 600, m_app_name, environment::WINDOWED);
+	m_graphics_manager = std::make_shared<graphics::GraphicsManager>(m_environment_manager, 2);
 	m_sound_manager = std::make_shared<sound::SoundManager>();
 
 	m_initialized = true;
@@ -29,6 +29,7 @@ int Engine::Loop()
 		m_graphics_manager->EndFrame();
 	}
 
+	m_graphics_manager->WaitDevice();
 
 	return EXIT_CODE_OK;
 }

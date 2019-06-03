@@ -10,8 +10,12 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
-	vkDestroySemaphore(m_vk_device, m_semaphore_image_available, nullptr);
-	vkDestroySemaphore(m_vk_device, m_semaphore_finished, nullptr);
+	for (size_t i = 0; i < m_max_frames_in_flight; i++)
+	{
+		vkDestroySemaphore(m_vk_device, m_semaphores_image_available[i], nullptr);
+		vkDestroySemaphore(m_vk_device, m_semaphores_finished[i], nullptr);
+		vkDestroyFence(m_vk_device, m_in_flight_fences[i], nullptr);
+	}
 
 	vkDestroyCommandPool(m_vk_device, m_vk_command_pool, nullptr);
 
@@ -59,7 +63,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateFramebuffers();
 		CreateCommandPool();
 		CreateCommandBuffers();
-		CreateSemaphores();
+		CreateSync();
 	}
 	catch (const std::exception& e)
 	{
@@ -583,17 +587,30 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 	}
 }
 
-void graphics::GraphicsManager::CreateSemaphores()
+void graphics::GraphicsManager::CreateSync()
 {
+	m_semaphores_image_available.resize(m_max_frames_in_flight);
+	m_semaphores_finished.resize(m_max_frames_in_flight);
+	m_in_flight_fences.resize(m_max_frames_in_flight);
+
 	VkSemaphoreCreateInfo semaphore_info = {};
 	semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	auto image_avaliable_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_image_available);
-	auto finished_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_finished);
-	if (image_avaliable_result != VK_SUCCESS || finished_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to create semaphores, errors: " + 
-			FormatVkResult(image_avaliable_result) + "\n" + 
-			FormatVkResult(finished_result));
+	VkFenceCreateInfo fence_info_ = {};
+	fence_info_.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fence_info_.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	for (size_t i = 0; i < m_max_frames_in_flight; i++)
+	{
+		auto image_avaliable_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphores_image_available[i]);
+		auto finished_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphores_finished[i]);
+		auto fence_result = vkCreateFence(m_vk_device, &fence_info_, nullptr, &m_in_flight_fences[i]);
+		if (image_avaliable_result != VK_SUCCESS || finished_result != VK_SUCCESS || fence_result != VK_SUCCESS)
+			throw std::runtime_error("Failed to create sync, errors: " +
+				FormatVkResult(image_avaliable_result) + "\n" +
+				FormatVkResult(finished_result) + "\n" +
+				FormatVkResult(fence_result));
+	}
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
@@ -691,15 +708,17 @@ void graphics::GraphicsManager::DestroyDebugUtilsMessengerEXT(const VkAllocation
 
 void graphics::GraphicsManager::BeginFrame()
 {
+	vkWaitForFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
+	vkResetFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame]);
 	uint32_t image_index;
 	vkAcquireNextImageKHR(m_vk_device, m_vk_swapchain, (std::numeric_limits<uint64_t>::max)(), 
-		m_semaphore_image_available, VK_NULL_HANDLE, &image_index);
+		m_semaphores_image_available[m_current_frame], VK_NULL_HANDLE, &image_index);
 
 	VkSubmitInfo submit_info = {};
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore wait_semaphores[] = { m_semaphore_image_available };
-	VkSemaphore signal_semaphores[] = { m_semaphore_finished };
+	VkSemaphore wait_semaphores[] = { m_semaphores_image_available[m_current_frame] };
+	VkSemaphore signal_semaphores[] = { m_semaphores_finished[m_current_frame] };
 
 	VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submit_info.waitSemaphoreCount = 1;
@@ -710,7 +729,7 @@ void graphics::GraphicsManager::BeginFrame()
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = &m_vk_command_buffers[image_index];
 	
-	auto submit_result = vkQueueSubmit(m_vk_graphics_queue, 1, &submit_info, VK_NULL_HANDLE);
+	auto submit_result = vkQueueSubmit(m_vk_graphics_queue, 1, &submit_info, m_in_flight_fences[m_current_frame]);
 	if (submit_result != VK_SUCCESS)
 		throw std::runtime_error("Failed to submit begin frame command buffer, error: " + FormatVkResult(submit_result));
 
@@ -726,11 +745,20 @@ void graphics::GraphicsManager::BeginFrame()
 	present_info.pResults = nullptr; // Optional, It's not necessary if only use a single swap chain 
 
 	vkQueuePresentKHR(m_vk_present_queue, &present_info);
+
+	
 }
 
 void graphics::GraphicsManager::EndFrame()
 {
+	vkQueueWaitIdle(m_vk_present_queue);
 
+	m_current_frame = (m_current_frame + 1) % m_max_frames_in_flight;
+}
+
+void graphics::GraphicsManager::WaitDevice()
+{
+	vkDeviceWaitIdle(m_vk_device);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL graphics::DebugCallback(
