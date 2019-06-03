@@ -33,7 +33,7 @@ namespace graphics
 	std::string FormatVkResult(VkResult code_);
 
 	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice device_, VkSurfaceKHR surface_);
-	VkSurfaceFormatKHR ÑhooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats_);
-	VkPresentModeKHR ÑhooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes_);
+	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats_);
+	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes_);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities_, int width_, int height_);
 }

@@ -121,7 +121,7 @@ graphics::SwapChainSupportDetails graphics::QuerySwapChainSupport(VkPhysicalDevi
 	return details;
 }
 
-VkSurfaceFormatKHR graphics::ÑhooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats_)
+VkSurfaceFormatKHR graphics::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats_)
 {
 	if (available_formats_.size() == 1 && available_formats_[0].format == VK_FORMAT_UNDEFINED)
 		return { VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR };
@@ -133,7 +133,7 @@ VkSurfaceFormatKHR graphics::ÑhooseSwapSurfaceFormat(const std::vector<VkSurface
 	return available_formats_[0];
 }
 
-VkPresentModeKHR graphics::ÑhooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes_) 
+VkPresentModeKHR graphics::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes_) 
 {
 	VkPresentModeKHR best = VK_PRESENT_MODE_FIFO_KHR;
 

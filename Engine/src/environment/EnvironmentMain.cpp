@@ -9,6 +9,7 @@ void environment::EnvironmentManager::Initialize(bool create_window_)
 	}
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	m_monitor = glfwGetPrimaryMonitor();
 
 	m_initialized = true;

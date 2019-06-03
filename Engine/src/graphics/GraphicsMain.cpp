@@ -10,8 +10,12 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
-	vkDestroySemaphore(m_vk_device, m_semaphore_image_available, nullptr);
-	vkDestroySemaphore(m_vk_device, m_semaphore_finished, nullptr);
+	for (size_t i = 0; i < m_max_frames_in_flight; i++)
+	{
+		vkDestroySemaphore(m_vk_device, m_semaphores_image_available[i], nullptr);
+		vkDestroySemaphore(m_vk_device, m_semaphores_finished[i], nullptr);
+		vkDestroyFence(m_vk_device, m_in_flight_fences[i], nullptr);
+	}
 
 	vkDestroyCommandPool(m_vk_device, m_vk_command_pool, nullptr);
 
@@ -59,7 +63,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateFramebuffers();
 		CreateCommandPool();
 		CreateCommandBuffers();
-		CreateSemaphores();
+		CreateSync();
 	}
 	catch (const std::exception& e)
 	{
@@ -114,7 +118,8 @@ void graphics::GraphicsManager::SetupDebugMessenger()
 	create_info.messageSeverity =
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
 		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | 
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
 	// Add VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT for full info
 	create_info.messageType =
 		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
@@ -200,8 +205,8 @@ void graphics::GraphicsManager::CreateSwapChain()
 {
 	SwapChainSupportDetails swapchain_support = QuerySwapChainSupport(m_vk_physical_device, m_vk_surface);
 
-	VkSurfaceFormatKHR surface_format = ÑhooseSwapSurfaceFormat(swapchain_support.formats);
-	VkPresentModeKHR present_mode = ÑhooseSwapPresentMode(swapchain_support.present_modes);
+	VkSurfaceFormatKHR surface_format = ChooseSwapSurfaceFormat(swapchain_support.formats);
+	VkPresentModeKHR present_mode = ChooseSwapPresentMode(swapchain_support.present_modes);
 	VkExtent2D extent = ChooseSwapExtent(swapchain_support.capabilities, m_environment_manager->WindowWidth(), m_environment_manager->WindowHeight());
 
 	uint32_t image_count = swapchain_support.capabilities.minImageCount + 1;
@@ -275,7 +280,7 @@ void graphics::GraphicsManager::CreateImageViews()
 
 		auto result = vkCreateImageView(m_vk_device, &create_info, nullptr, &m_vk_image_views[i]);
 		if (result != VK_SUCCESS)
-			throw std::runtime_error(FormatVkResult(result));
+			throw std::runtime_error("Failed to create imageView, error: " + FormatVkResult(result));
 	}
 }
 
@@ -303,17 +308,27 @@ void graphics::GraphicsManager::CreateRenderPass()
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &attachment_reference;
 
+	VkSubpassDependency dependency = {};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
 	VkRenderPassCreateInfo render_pass_info = {};
 	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	render_pass_info.attachmentCount = 1;
 	render_pass_info.pAttachments = &color_attachment;
 	render_pass_info.subpassCount = 1;
 	render_pass_info.pSubpasses = &subpass;
+	render_pass_info.dependencyCount = 1;
+	render_pass_info.pDependencies = &dependency;
 
 	auto result = vkCreateRenderPass(m_vk_device, &render_pass_info, nullptr, &m_vk_render_pass);
 	if (result != VK_SUCCESS)
 	{
-		throw std::runtime_error("Failed to create render pass!");
+		throw std::runtime_error("Failed to create VkRenderPass, error: " + FormatVkResult(result));
 	}
 }
 
@@ -375,7 +390,7 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 	VkPipelineRasterizationStateCreateInfo rasterizer = {};
 	rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizer.depthClampEnable = VK_FALSE;
-	rasterizer.rasterizerDiscardEnable = VK_TRUE;
+	rasterizer.rasterizerDiscardEnable = VK_FALSE;
 	rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizer.lineWidth = 1.0f;
 	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
@@ -429,7 +444,7 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 
 	auto pipeline_layout_creation_result = vkCreatePipelineLayout(m_vk_device, &pipeline_layout_info, nullptr, &m_vk_pipeline_layout);
 	if (pipeline_layout_creation_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to create pipeline layout!");
+		throw std::runtime_error("Failed to create VkPipelineLayout, error: " + FormatVkResult(pipeline_layout_creation_result));
 
 // Graphics pipeline creation 
 	VkGraphicsPipelineCreateInfo pipeline_info = {};
@@ -457,7 +472,7 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 	auto graphics_pipeline_creation_result = vkCreateGraphicsPipelines(m_vk_device, VK_NULL_HANDLE, 1, &pipeline_info, nullptr, &m_vk_graphics_pipeline);
 	if (graphics_pipeline_creation_result != VK_SUCCESS)
 	{
-		throw std::runtime_error("Failed to create graphics pipeline!");
+		throw std::runtime_error("Failed to create VkPipeline, error: " + FormatVkResult(graphics_pipeline_creation_result));
 	}
 
 	vkDestroyShaderModule(m_vk_device, frag_shader_module, nullptr);
@@ -483,7 +498,7 @@ void graphics::GraphicsManager::CreateFramebuffers()
 		auto result = vkCreateFramebuffer(m_vk_device, &frameduffer_info, nullptr, &m_vk_swapchain_framebuffers[i]);
 		if (result != VK_SUCCESS)
 		{
-			throw std::runtime_error("Failed to create framebuffer!");
+			throw std::runtime_error("Failed to create VkFramebuffer, error: " + FormatVkResult(result));
 		}
 	}
 }
@@ -505,7 +520,7 @@ void graphics::GraphicsManager::CreateCommandPool()
 
 	auto result = vkCreateCommandPool(m_vk_device, &pool_info, nullptr, &m_vk_command_pool);
 	if (result != VK_SUCCESS)
-		throw std::runtime_error("Failed to create command pool");
+		throw std::runtime_error("Failed to create VkCommandPool, error: " + FormatVkResult(result));
 }
 
 void graphics::GraphicsManager::CreateCommandBuffers()
@@ -524,7 +539,7 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 
 	auto allocate_result = vkAllocateCommandBuffers(m_vk_device, &allocate_info, m_vk_command_buffers.data());
 	if (allocate_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to allocate comand buffers");
+		throw std::runtime_error("Failed to allocate comand buffers, error: " + FormatVkResult(allocate_result));
 
 	for (size_t i = 0; i < m_vk_command_buffers.size(); i++)
 	{
@@ -540,17 +555,19 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 
 		auto begin_result = vkBeginCommandBuffer(m_vk_command_buffers[i], &begin_info);
 		if (begin_result != VK_SUCCESS)
-			throw std::runtime_error("Failed to begin recordig command buffer!");
+			throw std::runtime_error("Failed to begin recordig command buffer, error: " + FormatVkResult(begin_result));
 
-		VkClearValue clear_color = { 0.0f, 0.0f, 0.0f, 0.0f };
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass = m_vk_render_pass;
 		render_pass_info.framebuffer = m_vk_swapchain_framebuffers[i];
 		render_pass_info.renderArea.offset = { 0,0 };
 		render_pass_info.renderArea.extent = m_vk_swapchain_extent;
+
+		VkClearValue clear_color = { 0.0f, 0.0f, 0.0f, 1.0f };
 		render_pass_info.clearValueCount = 1;
 		render_pass_info.pClearValues = &clear_color;
+
 		vkCmdBeginRenderPass(m_vk_command_buffers[i], &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 		//	VK_SUBPASS_CONTENTS_INLINE: 
 		//The render pass commands will be embedded in the primary command buffer itself
@@ -559,25 +576,41 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 		//The render pass commands will be executed from secondary command buffers.
 
 		vkCmdBindPipeline(m_vk_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_vk_graphics_pipeline);
-		vkCmdDraw(m_vk_command_buffers[i], 3, 1, 1, 1);
+
+		vkCmdDraw(m_vk_command_buffers[i], 3, 1, 0, 0);
 
 		vkCmdEndRenderPass(m_vk_command_buffers[i]);
 
 		auto record_result = vkEndCommandBuffer(m_vk_command_buffers[i]);
 		if (record_result != VK_SUCCESS)
-			throw std::runtime_error("Failed to record command buffer!");
+			throw std::runtime_error("Failed to record command buffer, error: " + FormatVkResult(record_result));
 	}
 }
 
-void graphics::GraphicsManager::CreateSemaphores()
+void graphics::GraphicsManager::CreateSync()
 {
+	m_semaphores_image_available.resize(m_max_frames_in_flight);
+	m_semaphores_finished.resize(m_max_frames_in_flight);
+	m_in_flight_fences.resize(m_max_frames_in_flight);
+
 	VkSemaphoreCreateInfo semaphore_info = {};
 	semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	auto image_avaliable_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_image_available);
-	auto finished_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphore_finished);
-	if (image_avaliable_result != VK_SUCCESS || finished_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to create semaphores");
+	VkFenceCreateInfo fence_info_ = {};
+	fence_info_.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fence_info_.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	for (size_t i = 0; i < m_max_frames_in_flight; i++)
+	{
+		auto image_avaliable_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphores_image_available[i]);
+		auto finished_result = vkCreateSemaphore(m_vk_device, &semaphore_info, nullptr, &m_semaphores_finished[i]);
+		auto fence_result = vkCreateFence(m_vk_device, &fence_info_, nullptr, &m_in_flight_fences[i]);
+		if (image_avaliable_result != VK_SUCCESS || finished_result != VK_SUCCESS || fence_result != VK_SUCCESS)
+			throw std::runtime_error("Failed to create sync, errors: " +
+				FormatVkResult(image_avaliable_result) + "\n" +
+				FormatVkResult(finished_result) + "\n" +
+				FormatVkResult(fence_result));
+	}
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
@@ -675,12 +708,57 @@ void graphics::GraphicsManager::DestroyDebugUtilsMessengerEXT(const VkAllocation
 
 void graphics::GraphicsManager::BeginFrame()
 {
+	vkWaitForFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
+	vkResetFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame]);
+	uint32_t image_index;
+	vkAcquireNextImageKHR(m_vk_device, m_vk_swapchain, (std::numeric_limits<uint64_t>::max)(), 
+		m_semaphores_image_available[m_current_frame], VK_NULL_HANDLE, &image_index);
 
+	VkSubmitInfo submit_info = {};
+	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore wait_semaphores[] = { m_semaphores_image_available[m_current_frame] };
+	VkSemaphore signal_semaphores[] = { m_semaphores_finished[m_current_frame] };
+
+	VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+	submit_info.waitSemaphoreCount = 1;
+	submit_info.pWaitSemaphores = wait_semaphores;
+	submit_info.signalSemaphoreCount = 1;
+	submit_info.pSignalSemaphores = signal_semaphores;
+	submit_info.pWaitDstStageMask = wait_stages;
+	submit_info.commandBufferCount = 1;
+	submit_info.pCommandBuffers = &m_vk_command_buffers[image_index];
+	
+	auto submit_result = vkQueueSubmit(m_vk_graphics_queue, 1, &submit_info, m_in_flight_fences[m_current_frame]);
+	if (submit_result != VK_SUCCESS)
+		throw std::runtime_error("Failed to submit begin frame command buffer, error: " + FormatVkResult(submit_result));
+
+
+	VkPresentInfoKHR present_info = {};
+	present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	present_info.waitSemaphoreCount = 1;
+	present_info.pWaitSemaphores = signal_semaphores;
+	present_info.swapchainCount = 1;
+	VkSwapchainKHR swap_chains[] = { m_vk_swapchain };
+	present_info.pSwapchains = swap_chains;
+	present_info.pImageIndices = &image_index;
+	present_info.pResults = nullptr; // Optional, It's not necessary if only use a single swap chain 
+
+	vkQueuePresentKHR(m_vk_present_queue, &present_info);
+
+	
 }
 
 void graphics::GraphicsManager::EndFrame()
 {
+	vkQueueWaitIdle(m_vk_present_queue);
 
+	m_current_frame = (m_current_frame + 1) % m_max_frames_in_flight;
+}
+
+void graphics::GraphicsManager::WaitDevice()
+{
+	vkDeviceWaitIdle(m_vk_device);
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL graphics::DebugCallback(
