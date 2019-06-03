@@ -72,7 +72,7 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 
 		int WindowWidth() 
 		{
-			UpdateWindowSize()
+			UpdateWindowSize();
 			return m_window_width; 
 		}
 
