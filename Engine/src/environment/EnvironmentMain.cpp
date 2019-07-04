@@ -16,7 +16,6 @@ void environment::EnvironmentManager::Initialize(bool create_window_)
 
 	if (create_window_)
 		WindowCreate(m_window_width, m_window_height, m_window_title, m_window_type);
-	glfwSetWindowUserPointer(m_window, this);
 	glfwSetFramebufferSizeCallback(m_window, FramebufferResizeCallback);
 }
 
