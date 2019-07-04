@@ -9,13 +9,14 @@ void environment::EnvironmentManager::Initialize(bool create_window_)
 	}
 	
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	m_monitor = glfwGetPrimaryMonitor();
 
 	m_initialized = true;
 
 	if (create_window_)
 		WindowCreate(m_window_width, m_window_height, m_window_title, m_window_type);
+	glfwSetFramebufferSizeCallback(m_window, FramebufferResizeCallback);
 }
 
 void environment::EnvironmentManager::Shutdown()
@@ -77,6 +78,12 @@ int environment::EnvironmentManager::DestroyWindow()
 	glfwDestroyWindow(m_window);
 	m_window_type = environment::NO_WINDOW;
 	return environment::EXIT_CODE_OK;
+}
+
+void environment::EnvironmentManager::FramebufferResizeCallback(GLFWwindow* window_, int width_, int height_)
+{
+	auto app = reinterpret_cast<EnvironmentManager*>(glfwGetWindowUserPointer(window_));
+	app->m_framebuffer_resized = true;
 }
 
 int environment::EnvironmentManager::WindowCreate(int width_, int height_, std::string title_, WindowType type_)

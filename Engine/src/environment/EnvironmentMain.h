@@ -31,6 +31,7 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		// VARIABLES
 	private:
 		bool m_initialized = false;
+		bool m_framebuffer_resized = false;
 
 		int m_window_width = 0;
 		int m_window_height = 0;
@@ -62,11 +63,15 @@ enum WindowType{ NO_WINDOW, WINDOWED, BORDERLESS, FULLSCREEN };
 		int CreateBorderlessWindow();
 
 	public:
+		static void FramebufferResizeCallback(GLFWwindow* window_, int width_, int height_);
+
 		int WindowCreate(int width_, int height_, std::string title_, WindowType type_);
 		void ProcessMessages();
 		bool ShouldFinish();
 		bool IsWindowCreated();
 		HWND GetWindowHandle();
+
+		bool &ResizeState() { return m_framebuffer_resized; };
 
 		void UpdateWindowSize() { glfwGetWindowSize(m_window, &m_window_width, &m_window_height); }
 

@@ -10,6 +10,8 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	ShutdownSwapChain();
+
 	for (size_t i = 0; i < m_max_frames_in_flight; i++)
 	{
 		vkDestroySemaphore(m_vk_device, m_semaphores_image_available[i], nullptr);
@@ -19,8 +21,23 @@ void graphics::GraphicsManager::Shutdown()
 
 	vkDestroyCommandPool(m_vk_device, m_vk_command_pool, nullptr);
 
+	vkDestroyDevice(m_vk_device, nullptr);
+
+	if (m_enable_validation_layers)
+		DestroyDebugUtilsMessengerEXT(nullptr);
+
+	vkDestroySurfaceKHR(m_vk_instance, m_vk_surface, nullptr);
+	vkDestroyInstance(m_vk_instance, nullptr);
+
+	m_initialized = false;
+}
+
+void graphics::GraphicsManager::ShutdownSwapChain()
+{
 	for (auto framebuffer : m_vk_swapchain_framebuffers)
 		vkDestroyFramebuffer(m_vk_device, framebuffer, nullptr);
+
+	vkFreeCommandBuffers(m_vk_device, m_vk_command_pool, static_cast<uint32_t>(m_vk_command_buffers.size()), m_vk_command_buffers.data());
 
 	vkDestroyPipeline(m_vk_device, m_vk_graphics_pipeline, nullptr);
 	vkDestroyPipelineLayout(m_vk_device, m_vk_pipeline_layout, nullptr);
@@ -30,17 +47,6 @@ void graphics::GraphicsManager::Shutdown()
 		vkDestroyImageView(m_vk_device, image_view, nullptr);
 
 	vkDestroySwapchainKHR(m_vk_device, m_vk_swapchain, nullptr);
-	vkDestroyDevice(m_vk_device, nullptr);
-	if (m_enable_validation_layers)
-		DestroyDebugUtilsMessengerEXT(nullptr);
-
-	if (m_vk_instance != VK_NULL_HANDLE)
-	{
-		vkDestroySurfaceKHR(m_vk_instance, m_vk_surface, nullptr);
-		vkDestroyInstance(m_vk_instance, nullptr);
-	}
-
-	m_initialized = false;
 }
 
 bool graphics::GraphicsManager::InitializeVulkan()
@@ -613,6 +619,23 @@ void graphics::GraphicsManager::CreateSync()
 	}
 }
 
+void graphics::GraphicsManager::RecreateSwapChain()
+{
+	while (m_environment_manager->WindowHeight() == 0 || m_environment_manager->WindowWidth() == 0)
+		glfwWaitEvents();
+
+	WaitDevice();
+
+	ShutdownSwapChain();
+
+	CreateSwapChain();
+	CreateImageViews();
+	CreateRenderPass();
+	CreateGraphicsPipeline();
+	CreateFramebuffers();
+	CreateCommandBuffers();
+}
+
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
 {
 	uint32_t glfw_extension_count = 0;
@@ -709,10 +732,19 @@ void graphics::GraphicsManager::DestroyDebugUtilsMessengerEXT(const VkAllocation
 void graphics::GraphicsManager::BeginFrame()
 {
 	vkWaitForFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
-	vkResetFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame]);
 	uint32_t image_index;
-	vkAcquireNextImageKHR(m_vk_device, m_vk_swapchain, (std::numeric_limits<uint64_t>::max)(), 
+	auto acquire_result = vkAcquireNextImageKHR(m_vk_device, m_vk_swapchain, (std::numeric_limits<uint64_t>::max)(), 
 		m_semaphores_image_available[m_current_frame], VK_NULL_HANDLE, &image_index);
+
+	if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		RecreateSwapChain();
+		return;
+	}
+	else if (acquire_result != VK_SUCCESS && acquire_result != VK_SUBOPTIMAL_KHR)
+	{
+		throw std::runtime_error("Failed to acquire swap chain image, error : " + FormatVkResult(acquire_result));
+	}
 
 	VkSubmitInfo submit_info = {};
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -728,6 +760,8 @@ void graphics::GraphicsManager::BeginFrame()
 	submit_info.pWaitDstStageMask = wait_stages;
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = &m_vk_command_buffers[image_index];
+
+	vkResetFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame]);
 	
 	auto submit_result = vkQueueSubmit(m_vk_graphics_queue, 1, &submit_info, m_in_flight_fences[m_current_frame]);
 	if (submit_result != VK_SUCCESS)
@@ -744,9 +778,16 @@ void graphics::GraphicsManager::BeginFrame()
 	present_info.pImageIndices = &image_index;
 	present_info.pResults = nullptr; // Optional, It's not necessary if only use a single swap chain 
 
-	vkQueuePresentKHR(m_vk_present_queue, &present_info);
-
-	
+	auto present_result = vkQueuePresentKHR(m_vk_present_queue, &present_info);
+	if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR || m_environment_manager->ResizeState())
+	{
+		m_environment_manager->ResizeState() = false;
+		RecreateSwapChain();
+	}
+	else if (present_result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to present swap chain, error : " + FormatVkResult(present_result));
+	}
 }
 
 void graphics::GraphicsManager::EndFrame()

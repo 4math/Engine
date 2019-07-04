@@ -86,6 +86,7 @@ namespace graphics
 	private:
 		void Initialize();
 		void Shutdown();
+		void ShutdownSwapChain();
 
 		bool InitializeVulkan();
 		void CreateInstance();
@@ -101,6 +102,7 @@ namespace graphics
 		void CreateCommandPool();
 		void CreateCommandBuffers();
 		void CreateSync();
+		void RecreateSwapChain();
 
 		bool IsDeviceSuitable(VkPhysicalDevice device_);
 		bool CheckDeviceExtensionSupport(VkPhysicalDevice device_);
