@@ -621,6 +621,9 @@ void graphics::GraphicsManager::CreateSync()
 
 void graphics::GraphicsManager::RecreateSwapChain()
 {
+	while (m_environment_manager->WindowHeight() == 0 || m_environment_manager->WindowWidth() == 0)
+		glfwWaitEvents();
+
 	WaitDevice();
 
 	ShutdownSwapChain();
