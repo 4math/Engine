@@ -10,6 +10,8 @@ void graphics::GraphicsManager::Initialize()
 
 void graphics::GraphicsManager::Shutdown()
 {
+	ShutdownSwapChain();
+
 	for (size_t i = 0; i < m_max_frames_in_flight; i++)
 	{
 		vkDestroySemaphore(m_vk_device, m_semaphores_image_available[i], nullptr);
@@ -19,8 +21,23 @@ void graphics::GraphicsManager::Shutdown()
 
 	vkDestroyCommandPool(m_vk_device, m_vk_command_pool, nullptr);
 
+	vkDestroyDevice(m_vk_device, nullptr);
+
+	if (m_enable_validation_layers)
+		DestroyDebugUtilsMessengerEXT(nullptr);
+
+	vkDestroySurfaceKHR(m_vk_instance, m_vk_surface, nullptr);
+	vkDestroyInstance(m_vk_instance, nullptr);
+
+	m_initialized = false;
+}
+
+void graphics::GraphicsManager::ShutdownSwapChain()
+{
 	for (auto framebuffer : m_vk_swapchain_framebuffers)
 		vkDestroyFramebuffer(m_vk_device, framebuffer, nullptr);
+
+	vkFreeCommandBuffers(m_vk_device, m_vk_command_pool, static_cast<uint32_t>(m_vk_command_buffers.size()), m_vk_command_buffers.data());
 
 	vkDestroyPipeline(m_vk_device, m_vk_graphics_pipeline, nullptr);
 	vkDestroyPipelineLayout(m_vk_device, m_vk_pipeline_layout, nullptr);
@@ -30,17 +47,6 @@ void graphics::GraphicsManager::Shutdown()
 		vkDestroyImageView(m_vk_device, image_view, nullptr);
 
 	vkDestroySwapchainKHR(m_vk_device, m_vk_swapchain, nullptr);
-	vkDestroyDevice(m_vk_device, nullptr);
-	if (m_enable_validation_layers)
-		DestroyDebugUtilsMessengerEXT(nullptr);
-
-	if (m_vk_instance != VK_NULL_HANDLE)
-	{
-		vkDestroySurfaceKHR(m_vk_instance, m_vk_surface, nullptr);
-		vkDestroyInstance(m_vk_instance, nullptr);
-	}
-
-	m_initialized = false;
 }
 
 bool graphics::GraphicsManager::InitializeVulkan()
@@ -611,6 +617,20 @@ void graphics::GraphicsManager::CreateSync()
 				FormatVkResult(finished_result) + "\n" +
 				FormatVkResult(fence_result));
 	}
+}
+
+void graphics::GraphicsManager::RecreateSwapChain()
+{
+	WaitDevice();
+
+	ShutdownSwapChain();
+
+	CreateSwapChain();
+	CreateImageViews();
+	CreateRenderPass();
+	CreateGraphicsPipeline();
+	CreateFramebuffers();
+	CreateCommandBuffers();
 }
 
 std::vector<const char*> graphics::GraphicsManager::GetRequiredExtensions()
