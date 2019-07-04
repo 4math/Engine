@@ -729,10 +729,19 @@ void graphics::GraphicsManager::DestroyDebugUtilsMessengerEXT(const VkAllocation
 void graphics::GraphicsManager::BeginFrame()
 {
 	vkWaitForFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame], VK_TRUE, (std::numeric_limits<uint64_t>::max)());
-	vkResetFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame]);
 	uint32_t image_index;
-	vkAcquireNextImageKHR(m_vk_device, m_vk_swapchain, (std::numeric_limits<uint64_t>::max)(), 
+	auto acquire_result = vkAcquireNextImageKHR(m_vk_device, m_vk_swapchain, (std::numeric_limits<uint64_t>::max)(), 
 		m_semaphores_image_available[m_current_frame], VK_NULL_HANDLE, &image_index);
+
+	if (acquire_result == VK_ERROR_OUT_OF_DATE_KHR)
+	{
+		RecreateSwapChain();
+		return;
+	}
+	else if (acquire_result != VK_SUCCESS && acquire_result != VK_SUBOPTIMAL_KHR)
+	{
+		throw std::runtime_error("Failed to acquire swap chain image, error : " + FormatVkResult(acquire_result));
+	}
 
 	VkSubmitInfo submit_info = {};
 	submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -748,6 +757,8 @@ void graphics::GraphicsManager::BeginFrame()
 	submit_info.pWaitDstStageMask = wait_stages;
 	submit_info.commandBufferCount = 1;
 	submit_info.pCommandBuffers = &m_vk_command_buffers[image_index];
+
+	vkResetFences(m_vk_device, 1, &m_in_flight_fences[m_current_frame]);
 	
 	auto submit_result = vkQueueSubmit(m_vk_graphics_queue, 1, &submit_info, m_in_flight_fences[m_current_frame]);
 	if (submit_result != VK_SUCCESS)
@@ -764,9 +775,16 @@ void graphics::GraphicsManager::BeginFrame()
 	present_info.pImageIndices = &image_index;
 	present_info.pResults = nullptr; // Optional, It's not necessary if only use a single swap chain 
 
-	vkQueuePresentKHR(m_vk_present_queue, &present_info);
-
-	
+	auto present_result = vkQueuePresentKHR(m_vk_present_queue, &present_info);
+	if (present_result == VK_ERROR_OUT_OF_DATE_KHR || present_result == VK_SUBOPTIMAL_KHR || m_environment_manager->ResizeState())
+	{
+		m_environment_manager->ResizeState() = false;
+		RecreateSwapChain();
+	}
+	else if (present_result != VK_SUCCESS)
+	{
+		throw std::runtime_error("Failed to present swap chain, error : " + FormatVkResult(present_result));
+	}
 }
 
 void graphics::GraphicsManager::EndFrame()
