@@ -63,3 +63,30 @@ VkShaderModule graphics::ShaderManager::CreateShaderModule(const std::string& fi
 
 	return shader_module;
 }
+
+VkVertexInputBindingDescription graphics::Vertex::GetBindingDescription()
+{
+	VkVertexInputBindingDescription binding_discription = {};
+
+	binding_discription.binding = 0;
+	binding_discription.stride = sizeof(Vertex);
+	binding_discription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	return binding_discription;
+}
+
+std::array<VkVertexInputAttributeDescription, 2> graphics::Vertex::GetAttributeDescriptions()
+{
+	std::array<VkVertexInputAttributeDescription, 2> attribute_descriptions = {};
+
+	attribute_descriptions[0].binding = 0;
+	attribute_descriptions[0].location = 0;
+	attribute_descriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+	attribute_descriptions[0].offset = offsetof(Vertex, pos);
+	attribute_descriptions[1].binding = 0;
+	attribute_descriptions[1].location = 1;
+	attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attribute_descriptions[1].offset = offsetof(Vertex, color);
+
+	return attribute_descriptions;
+}
