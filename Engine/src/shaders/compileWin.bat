@@ -1,3 +1,3 @@
-"C:\VulkanSDK\1.1.101.0\Bin32\glslangValidator.exe" -V Basic.vert
-"C:\VulkanSDK\1.1.101.0\Bin32\glslangValidator.exe" -V Basic.frag
-pause
+%echo off
+%VULKAN_SDK%/Bin/glslangValidator.exe -o BasicVert.spv -V Basic.vert
+%VULKAN_SDK%/Bin/glslangValidator.exe -o BasicFrag.spv -V Basic.frag
