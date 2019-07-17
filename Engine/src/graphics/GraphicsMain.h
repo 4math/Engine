@@ -115,6 +115,16 @@ namespace graphics
 		VkResult CreateDebugUtilsMessengerEXT(
 			const VkDebugUtilsMessengerCreateInfoEXT* create_info_,
 			const VkAllocationCallbacks* allocator_);
+		void CreateBuffer(
+			VkDeviceSize size_, 
+			VkBufferUsageFlags usage_, 
+			VkMemoryPropertyFlags properties_,
+			VkBuffer& buffer_, 
+			VkDeviceMemory& buffer_memory_);
+		void CopyBuffer(
+			VkBuffer src_buffer_, 
+			VkBuffer dst_buffer_, 
+			VkDeviceSize size_);
 		void DestroyDebugUtilsMessengerEXT(const VkAllocationCallbacks* allocator_);
 	public:
 		void BeginFrame();
