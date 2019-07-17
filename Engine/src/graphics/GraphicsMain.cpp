@@ -15,6 +15,9 @@ void graphics::GraphicsManager::Shutdown()
 	vkDestroyBuffer(m_vk_device, m_vk_vertex_buffer, nullptr);
 	vkFreeMemory(m_vk_device, m_vk_vertex_buffer_memory, nullptr);
 
+	vkDestroyBuffer(m_vk_device, m_vk_index_buffer, nullptr);
+	vkFreeMemory(m_vk_device, m_vk_index_buffer_memory, nullptr);
+
 	for (size_t i = 0; i < m_max_frames_in_flight; i++)
 	{
 		vkDestroySemaphore(m_vk_device, m_semaphores_image_available[i], nullptr);
@@ -72,6 +75,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateFramebuffers();
 		CreateCommandPool();
 		CreateVertexBuffers();
+		CreateIndexBuffers();
 		CreateCommandBuffers();
 		CreateSync();
 	}
@@ -545,10 +549,10 @@ void graphics::GraphicsManager::CreateVertexBuffers()
 	VkBuffer staging_buffer;
 	VkDeviceMemory staging_buffer_memory;
 	CreateBuffer(
-		buffer_size, 
+		buffer_size,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, // Buffer can be used as source in a memory transfer operation 
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
-		staging_buffer, 
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		staging_buffer,
 		staging_buffer_memory);
 
 	void* data;
@@ -564,6 +568,40 @@ void graphics::GraphicsManager::CreateVertexBuffers()
 		m_vk_vertex_buffer_memory);
 
 	CopyBuffer(staging_buffer, m_vk_vertex_buffer, buffer_size);
+
+	vkDestroyBuffer(m_vk_device, staging_buffer, nullptr);
+	vkFreeMemory(m_vk_device, staging_buffer_memory, nullptr);
+}
+
+// TODO: Change to Vulkan Memory Allocation! 
+// https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator 
+
+void graphics::GraphicsManager::CreateIndexBuffers()
+{
+	VkDeviceSize buffer_size = sizeof(indices[0]) * indices.size();
+
+	VkBuffer staging_buffer;
+	VkDeviceMemory staging_buffer_memory;
+	CreateBuffer(
+		buffer_size,
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT, // Buffer can be used as source in a memory transfer operation 
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		staging_buffer,
+		staging_buffer_memory);
+
+	void* data;
+	vkMapMemory(m_vk_device, staging_buffer_memory, 0, buffer_size, 0, &data);
+	memcpy(data, indices.data(), (size_t)buffer_size);
+	vkUnmapMemory(m_vk_device, staging_buffer_memory);
+
+	CreateBuffer(
+		buffer_size,
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, // Buffer can be used as destination in a memory transfer operation 
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		m_vk_index_buffer,
+		m_vk_index_buffer_memory);
+
+	CopyBuffer(staging_buffer, m_vk_index_buffer, buffer_size);
 
 	vkDestroyBuffer(m_vk_device, staging_buffer, nullptr);
 	vkFreeMemory(m_vk_device, staging_buffer_memory, nullptr);
@@ -626,8 +664,9 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 		VkBuffer vertex_buffers[] = { m_vk_vertex_buffer };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(m_vk_command_buffers[i], 0, 1, vertex_buffers, offsets);
-
-		vkCmdDraw(m_vk_command_buffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+		vkCmdBindIndexBuffer(m_vk_command_buffers[i], m_vk_index_buffer, 0, VK_INDEX_TYPE_UINT16);
+	
+		vkCmdDrawIndexed(m_vk_command_buffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(m_vk_command_buffers[i]);
 
