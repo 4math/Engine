@@ -2,12 +2,36 @@
 
 #include "GraphicsUtils.h"
 #include "vulkan/vulkan.h"
+#include "glm.hpp"
 #include <string>
 #include <vector>
+#include <array>
 #include <fstream>
 
 namespace graphics 
 {
+	struct Vertex
+	{
+		glm::vec2 pos;
+		glm::vec3 color;
+
+		static VkVertexInputBindingDescription GetBindingDescription();
+		static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDescriptions();
+	};
+
+	const std::vector<Vertex> vertices =
+	{
+		{{-0.8f, -0.8f},	{1.0f, 1.0f, 0.0f}},
+		{{0.8f, -0.8f},		{1.0f, 0.0f, 1.0f}},
+		{{0.8f, 0.8f},		{0.0f, 1.0f, 1.0f}},
+		{{-0.8f, 0.8f},		{1.0f, 1.0f, 1.0f}},
+	};
+
+	const std::vector<uint16_t> indices =
+	{
+		0, 1, 2, 2, 3, 0
+	};
+
 	enum ShaderInputType
 	{
 		BinaryInput,
