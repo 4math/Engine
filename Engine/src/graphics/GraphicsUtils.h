@@ -36,4 +36,6 @@ namespace graphics
 	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& available_formats_);
 	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& available_present_modes_);
 	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities_, int width_, int height_);
+
+	uint32_t FindMemoryType(uint32_t type_filter_, VkMemoryPropertyFlags properties_, VkPhysicalDevice physical_device_);
 }

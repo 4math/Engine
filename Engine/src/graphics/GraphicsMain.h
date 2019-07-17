@@ -48,6 +48,8 @@ namespace graphics
 		std::vector<VkFramebuffer> m_vk_swapchain_framebuffers;
 		std::vector<VkCommandBuffer> m_vk_command_buffers;
 		std::vector<VkImageView> m_vk_image_views;
+		VkBuffer m_vk_vertex_buffer = VK_NULL_HANDLE;
+		VkDeviceMemory m_vk_vertex_buffer_memory = VK_NULL_HANDLE;
 
 // GPU block 
 		VkInstance m_vk_instance = VK_NULL_HANDLE;
@@ -100,6 +102,7 @@ namespace graphics
 		void CreateGraphicsPipeline();
 		void CreateFramebuffers();
 		void CreateCommandPool();
+		void CreateVertexBuffers();
 		void CreateCommandBuffers();
 		void CreateSync();
 		void RecreateSwapChain();

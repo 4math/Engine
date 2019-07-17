@@ -163,3 +163,16 @@ VkExtent2D graphics::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabiliti
 		return actual_extent;
 	}
 }
+
+uint32_t graphics::FindMemoryType(uint32_t type_filter_, VkMemoryPropertyFlags properties_, VkPhysicalDevice physical_device_)
+{
+	VkPhysicalDeviceMemoryProperties mem_properties;
+	vkGetPhysicalDeviceMemoryProperties(physical_device_, &mem_properties);
+	for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++)
+	{
+		if (type_filter_ & (1 << i) && (mem_properties.memoryTypes[i].propertyFlags & properties_) == properties_)
+			return i;
+	}
+
+	throw std::runtime_error("Failed to find suitable memory type");
+}

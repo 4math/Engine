@@ -12,6 +12,9 @@ void graphics::GraphicsManager::Shutdown()
 {
 	ShutdownSwapChain();
 
+	vkDestroyBuffer(m_vk_device, m_vk_vertex_buffer, nullptr);
+	vkFreeMemory(m_vk_device, m_vk_vertex_buffer_memory, nullptr);
+
 	for (size_t i = 0; i < m_max_frames_in_flight; i++)
 	{
 		vkDestroySemaphore(m_vk_device, m_semaphores_image_available[i], nullptr);
@@ -68,6 +71,7 @@ bool graphics::GraphicsManager::InitializeVulkan()
 		CreateGraphicsPipeline();
 		CreateFramebuffers();
 		CreateCommandPool();
+		CreateVertexBuffers();
 		CreateCommandBuffers();
 		CreateSync();
 	}
@@ -534,6 +538,43 @@ void graphics::GraphicsManager::CreateCommandPool()
 		throw std::runtime_error("Failed to create VkCommandPool, error: " + FormatVkResult(result));
 }
 
+void graphics::GraphicsManager::CreateVertexBuffers()
+{
+	VkBufferCreateInfo buffer_info = {};
+	buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	buffer_info.size = sizeof(vertices[0]) * vertices.size();
+	buffer_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+	buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	buffer_info.flags = 0;
+
+	auto result = vkCreateBuffer(m_vk_device, &buffer_info, nullptr, &m_vk_vertex_buffer);
+	if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to create VkBuffer, error: " + FormatVkResult(result));
+
+	VkMemoryRequirements mem_requirements;
+	vkGetBufferMemoryRequirements(m_vk_device, m_vk_vertex_buffer, &mem_requirements);
+
+	VkMemoryAllocateInfo alloc_info = {};
+	alloc_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+	alloc_info.allocationSize = mem_requirements.size;
+	alloc_info.memoryTypeIndex = FindMemoryType(mem_requirements.memoryTypeBits,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		m_vk_physical_device);
+
+	result = vkAllocateMemory(m_vk_device, &alloc_info, nullptr, &m_vk_vertex_buffer_memory);
+	if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to allocate vertex buffer memory, error: " + FormatVkResult(result));
+
+	result = vkBindBufferMemory(m_vk_device, m_vk_vertex_buffer, m_vk_vertex_buffer_memory, 0);
+	if (result != VK_SUCCESS)
+		throw std::runtime_error("Failed to bind vertex buffer memory, error: " + FormatVkResult(result));
+
+	void* data;
+	vkMapMemory(m_vk_device, m_vk_vertex_buffer_memory, 0, buffer_info.size, 0, &data);
+	memcpy(data, vertices.data(), (size_t)buffer_info.size);
+	vkUnmapMemory(m_vk_device, m_vk_vertex_buffer_memory);
+}
+
 void graphics::GraphicsManager::CreateCommandBuffers()
 {
 	m_vk_command_buffers.resize(m_vk_swapchain_framebuffers.size());
@@ -588,7 +629,11 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 
 		vkCmdBindPipeline(m_vk_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_vk_graphics_pipeline);
 
-		vkCmdDraw(m_vk_command_buffers[i], 3, 1, 0, 0);
+		VkBuffer vertex_buffers[] = { m_vk_vertex_buffer };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(m_vk_command_buffers[i], 0, 1, vertex_buffers, offsets);
+
+		vkCmdDraw(m_vk_command_buffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
 		vkCmdEndRenderPass(m_vk_command_buffers[i]);
 
@@ -596,6 +641,7 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 		if (record_result != VK_SUCCESS)
 			throw std::runtime_error("Failed to record command buffer, error: " + FormatVkResult(record_result));
 	}
+
 }
 
 void graphics::GraphicsManager::CreateSync()
