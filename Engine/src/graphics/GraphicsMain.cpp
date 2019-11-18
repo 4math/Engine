@@ -92,7 +92,7 @@ void graphics::GraphicsManager::CreateInstance()
 	if (m_enable_validation_layers && !CheckValidationLayerSupport(m_validation_layers))
 		throw std::runtime_error("Validation layers requested, but not available!");
 
-	VkApplicationInfo app_info{
+	VkApplicationInfo app_info = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
 		.pApplicationName = m_app_name.c_str(),
 		.applicationVersion = VK_MAKE_VERSION(1, 0, 0),
@@ -101,13 +101,14 @@ void graphics::GraphicsManager::CreateInstance()
 		.apiVersion = VK_API_VERSION_1_0
 	};
 
-	VkInstanceCreateInfo create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-	create_info.pApplicationInfo = &app_info;
-
 	auto extensions = GetRequiredExtensions();
-	create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-	create_info.ppEnabledExtensionNames = extensions.data();
+
+	VkInstanceCreateInfo create_info = {
+		.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+		.pApplicationInfo = &app_info,
+		.enabledExtensionCount = static_cast<uint32_t>(extensions.size()),
+		.ppEnabledExtensionNames = extensions.data()
+	};
 
 	if (m_enable_validation_layers) 
 	{
@@ -115,9 +116,7 @@ void graphics::GraphicsManager::CreateInstance()
 		create_info.ppEnabledLayerNames = m_validation_layers.data();
 	}
 	else 
-	{
 		create_info.enabledLayerCount = 0;
-	}
 
 	auto result = vkCreateInstance(&create_info, nullptr, &m_vk_instance);
 	if (result != VK_SUCCESS)
@@ -128,19 +127,21 @@ void graphics::GraphicsManager::SetupDebugMessenger()
 {
 	if (!m_enable_validation_layers) return;
 
-	VkDebugUtilsMessengerCreateInfoEXT create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	create_info.messageSeverity =
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | 
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
-	// Add VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT for full info
-	create_info.messageType =
-		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | 
-		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | 
-		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	create_info.pfnUserCallback = DebugCallback;
+	VkDebugUtilsMessengerCreateInfoEXT create_info = {
+		.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+		.messageSeverity =
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT,
+			// Add VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT for full info
+		.messageType =
+			VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+			VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+		.pfnUserCallback = DebugCallback
+	};
+	
 
 	auto result = CreateDebugUtilsMessengerEXT(&create_info, nullptr);
 	if (result != VK_SUCCESS)
@@ -175,26 +176,28 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 
 	for (auto queue_family : unique_queue_families)
 	{
-		VkDeviceQueueCreateInfo queue_create_info = {};
-		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queue_create_info.queueCount = 1;
-		queue_create_info.queueFamilyIndex = queue_family;
-		queue_create_info.pQueuePriorities = &queue_priority;
+		VkDeviceQueueCreateInfo queue_create_info = {
+			.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+			.queueFamilyIndex = queue_family,
+			.queueCount = 1,
+			.pQueuePriorities = &queue_priority
+		};
 
 		queue_create_infos.push_back(queue_create_info);
 	}
 
 	VkPhysicalDeviceFeatures device_features = {};
 
-	VkDeviceCreateInfo create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	create_info.pQueueCreateInfos = queue_create_infos.data();
-	create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
-	create_info.pEnabledFeatures = &device_features;
-	create_info.ppEnabledExtensionNames = device_extensions.data();
-	create_info.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
-	create_info.enabledLayerCount = 0;
-
+	VkDeviceCreateInfo create_info = {
+		.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+		.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size()),
+		.pQueueCreateInfos = queue_create_infos.data(),
+		.enabledLayerCount = 0,
+		.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size()),
+		.ppEnabledExtensionNames = device_extensions.data(),
+		.pEnabledFeatures = &device_features
+	};
+	
 	auto result = vkCreateDevice(m_vk_physical_device, &create_info, nullptr, &m_vk_device);
 	if (result != VK_SUCCESS)
 		throw std::runtime_error("Failed to create VkDevice, error: " + FormatVkResult(result));
@@ -205,11 +208,12 @@ void graphics::GraphicsManager::CreateLogicalDevice()
 
 void graphics::GraphicsManager::CreateSurface()
 {
-	VkWin32SurfaceCreateInfoKHR create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-	create_info.hwnd = m_environment_manager->GetWindowHandle();
-	create_info.hinstance = GetModuleHandle(nullptr);
-
+	VkWin32SurfaceCreateInfoKHR create_info = {
+		.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+		.hinstance = GetModuleHandle(nullptr),
+		.hwnd = m_environment_manager->GetWindowHandle()
+	};
+	
 	auto result = vkCreateWin32SurfaceKHR(m_vk_instance, &create_info, nullptr, &m_vk_surface);
 
 	if (result != VK_SUCCESS)
@@ -228,21 +232,22 @@ void graphics::GraphicsManager::CreateSwapChain()
 	if (swapchain_support.capabilities.maxImageCount > 0 && image_count > swapchain_support.capabilities.maxImageCount)
 		image_count = swapchain_support.capabilities.maxImageCount;
 
-	VkSwapchainCreateInfoKHR create_info = {};
-	create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	create_info.surface = m_vk_surface;
-	create_info.minImageCount = image_count;
-	create_info.imageFormat = surface_format.format;
-	create_info.imageColorSpace = surface_format.colorSpace;
-	create_info.imageExtent = extent;
-	create_info.imageArrayLayers = 1;
-	create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-	create_info.preTransform = swapchain_support.capabilities.currentTransform;
-	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	create_info.presentMode = present_mode;
-	create_info.clipped = VK_TRUE;
-	create_info.oldSwapchain = VK_NULL_HANDLE;
-
+	VkSwapchainCreateInfoKHR create_info = {
+		.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+		.surface = m_vk_surface,
+		.minImageCount = image_count,
+		.imageFormat = surface_format.format,
+		.imageColorSpace = surface_format.colorSpace,
+		.imageExtent = extent,
+		.imageArrayLayers = 1,
+		.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+		.preTransform = swapchain_support.capabilities.currentTransform,
+		.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+		.presentMode = present_mode,
+		.clipped = VK_TRUE,
+		.oldSwapchain = VK_NULL_HANDLE
+	};
+	
 	QueueFamilyIndices indices = FindQueueFamilies(m_vk_physical_device);
 	uint32_t queue_family_indices[] = { indices.graphics_family.value(), indices.present_family.value() };
 
@@ -278,11 +283,13 @@ void graphics::GraphicsManager::CreateImageViews()
 
 	for (int i = 0; i < m_vk_image_views.size(); i++)
 	{
-		VkImageViewCreateInfo create_info = {};
-		create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		create_info.image = m_vk_swapchain_images[i];
-		create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		create_info.format = m_vk_swapchain_image_format;
+		VkImageViewCreateInfo create_info = {
+			.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+			.image = m_vk_swapchain_images[i],
+			.viewType = VK_IMAGE_VIEW_TYPE_2D,
+			.format = m_vk_swapchain_image_format
+		};
+		
 		create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 		create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
 		create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -301,45 +308,51 @@ void graphics::GraphicsManager::CreateImageViews()
 
 void graphics::GraphicsManager::CreateRenderPass()
 {
-	VkAttachmentDescription color_attachment = {};
-	color_attachment.format = m_vk_swapchain_image_format;
-	color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-	color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	VkAttachmentDescription color_attachment = {
+		.format = m_vk_swapchain_image_format,
+		.samples = VK_SAMPLE_COUNT_1_BIT,
+		.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+		.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+		.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+		.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	};
+	
 	// VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL: Images used as color attachment 
 	// VK_IMAGE_LAYOUT_PRESENT_SRC_KHR: Images to be presented in the swap chain 
 	// VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL : Images to be used as destination for a memory copy operation 
 
-	VkAttachmentReference attachment_reference = {};
-	attachment_reference.attachment = 0;
-	attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkSubpassDescription subpass = {};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &attachment_reference;
-
-	VkSubpassDependency dependency = {};
-	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 0;
-	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.srcAccessMask = 0;
-	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-	VkRenderPassCreateInfo render_pass_info = {};
-	render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	render_pass_info.attachmentCount = 1;
-	render_pass_info.pAttachments = &color_attachment;
-	render_pass_info.subpassCount = 1;
-	render_pass_info.pSubpasses = &subpass;
-	render_pass_info.dependencyCount = 1;
-	render_pass_info.pDependencies = &dependency;
-
+	VkAttachmentReference attachment_reference = {
+		attachment_reference.attachment = 0,
+		attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	};
+	
+	VkSubpassDescription subpass = {
+		.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+		.colorAttachmentCount = 1,
+		.pColorAttachments = &attachment_reference
+	};
+	
+	VkSubpassDependency dependency = {
+		.srcSubpass = VK_SUBPASS_EXTERNAL,
+		.dstSubpass = 0,
+		.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		.srcAccessMask = 0,
+		.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+	};
+	
+	VkRenderPassCreateInfo render_pass_info = {
+		.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+		.attachmentCount = 1,
+		.pAttachments = &color_attachment,
+		.subpassCount = 1,
+		.pSubpasses = &subpass,
+		.dependencyCount = 1,
+		.pDependencies = &dependency
+	};
+	
 	auto result = vkCreateRenderPass(m_vk_device, &render_pass_info, nullptr, &m_vk_render_pass);
 	if (result != VK_SUCCESS)
 	{
@@ -356,18 +369,20 @@ void graphics::GraphicsManager::CreateGraphicsPipeline()
 	VkShaderModule vert_shader_module = m_shader_manager->CreateShaderModule("BasicVert.spv", BinaryInput, m_vk_device);
 	VkShaderModule frag_shader_module = m_shader_manager->CreateShaderModule("BasicFrag.spv", BinaryInput, m_vk_device);
 
-	VkPipelineShaderStageCreateInfo vert_shader_create_info = {};
-	vert_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vert_shader_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vert_shader_create_info.module = vert_shader_module;
-	vert_shader_create_info.pName = "main";
+	VkPipelineShaderStageCreateInfo vert_shader_create_info = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+		.stage = VK_SHADER_STAGE_VERTEX_BIT,
+		.module = vert_shader_module,
+		.pName = "main"
+	};
 
-	VkPipelineShaderStageCreateInfo frag_shader_create_info = {};
-	frag_shader_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	frag_shader_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	frag_shader_create_info.module = frag_shader_module;
-	frag_shader_create_info.pName = "main";
-
+	VkPipelineShaderStageCreateInfo frag_shader_create_info = {
+		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+		.stage = VK_SHADER_STAGE_FRAGMENT_BIT,
+		.module = frag_shader_module,
+		.pName = "main"
+	};
+	
 	VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_create_info, frag_shader_create_info };
 
 // vertex and input assembly 
