@@ -116,7 +116,7 @@ int environment::EnvironmentManager::WindowCreate(int width_, int height_, std::
 }
 
 void environment::EnvironmentManager::ProcessMessages()
-{
+{ 
 	glfwPollEvents();
 }
 

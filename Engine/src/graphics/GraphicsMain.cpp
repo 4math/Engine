@@ -92,13 +92,14 @@ void graphics::GraphicsManager::CreateInstance()
 	if (m_enable_validation_layers && !CheckValidationLayerSupport(m_validation_layers))
 		throw std::runtime_error("Validation layers requested, but not available!");
 
-	VkApplicationInfo app_info = {};
-	app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	app_info.pApplicationName = m_app_name.c_str();
-	app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	app_info.pEngineName = m_engine_name.c_str();
-	app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-	app_info.apiVersion = VK_API_VERSION_1_0;
+	VkApplicationInfo app_info{
+		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+		.pApplicationName = m_app_name.c_str(),
+		.applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+		.pEngineName = m_engine_name.c_str(),
+		.engineVersion = VK_MAKE_VERSION(1, 0, 0),
+		.apiVersion = VK_API_VERSION_1_0
+	};
 
 	VkInstanceCreateInfo create_info = {};
 	create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

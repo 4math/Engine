@@ -10,10 +10,12 @@ class GenericGame : public virtual engine::Engine
 {
 	// VARIABLES
 protected:
-	double m_game_tickrate = DEFAULT_GAME_TICKRATE; // Game updates per second
+	double m_game_tickrate; // Game updates per second
 
 	// CONSTRUCTORS/DESTRUCTORS
 public:
-	GenericGame() {}
+	GenericGame(double game_tickrate_ = DEFAULT_GAME_TICKRATE) : 
+		m_game_tickrate(game_tickrate_) {}
+
 	virtual ~GenericGame() {};
 };

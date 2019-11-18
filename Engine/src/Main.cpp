@@ -19,7 +19,6 @@ public:
 
 int main(int argc, char** argv)
 {
-	
 #ifdef _DEBUG
 	Game debug_game;
 	int return_value = debug_game.Loop();
