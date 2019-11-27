@@ -646,7 +646,7 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 
 	auto allocate_result = vkAllocateCommandBuffers(m_vk_device, &allocate_info, m_vk_command_buffers.data());
 	if (allocate_result != VK_SUCCESS)
-		throw std::runtime_error("Failed to allocate comand buffers, error: " + FormatVkResult(allocate_result));
+		throw std::runtime_error("Failed to allocate command buffers, error: " + FormatVkResult(allocate_result));
 
 	for (size_t i = 0; i < m_vk_command_buffers.size(); i++)
 	{
@@ -662,7 +662,7 @@ void graphics::GraphicsManager::CreateCommandBuffers()
 
 		auto begin_result = vkBeginCommandBuffer(m_vk_command_buffers[i], &begin_info);
 		if (begin_result != VK_SUCCESS)
-			throw std::runtime_error("Failed to begin recordig command buffer, error: " + FormatVkResult(begin_result));
+			throw std::runtime_error("Failed to begin recording command buffer, error: " + FormatVkResult(begin_result));
 
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

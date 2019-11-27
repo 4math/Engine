@@ -101,17 +101,17 @@ int environment::EnvironmentManager::WindowCreate(int width_, int height_, std::
 
 	switch (m_window_type)
 	{
-	case environment::WINDOWED:
-		return CreateWindowedWindow();
+		case environment::WINDOWED:
+			return CreateWindowedWindow();
 
-	case environment::BORDERLESS:
-		return CreateBorderlessWindow();
+		case environment::BORDERLESS:
+			return CreateBorderlessWindow();
 
-	case environment::FULLSCREEN:
-		return CreateFullscreenWindow();
+		case environment::FULLSCREEN:
+			return CreateFullscreenWindow();
 
-	default:
-		return EXIT_CODE_FAILURE;
+		default:
+			return EXIT_CODE_FAILURE;
 	}
 }
 
